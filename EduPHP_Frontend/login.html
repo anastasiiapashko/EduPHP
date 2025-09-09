@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logowanie</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <form id="loginForm">
+        <h2>Logowanie użytkownika</h2>
+
+        <label for="login">Login</label>
+        <input type="text" id="login" name="login" required>
+
+        <label for="passwd">Hasło</label>
+        <input type="password" id="passwd" name="passwd" required>
+
+        <button type="submit">Zaloguj się</button>
+
+        <nav class="nav-main">
+        <a href="register.html"><i class="fas fa-book"></i> Rejestracja</a>
+        </nav>
+        
+        <div id="success" class="success"></div>
+        <div id="error" class="error"></div>
+    </form>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

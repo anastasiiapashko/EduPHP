@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel użytkownika</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <a href="user_main.html" class="logo">
+                <span class="logo-icon"><i class="fas fa-code"></i></span>
+                EduPHP
+            </a>
+            <nav class="nav-main">
+                <a href="kurs.html"><i class="fas fa-book"></i> Kurs</a>
+                <a href="creator.html" id="creatorTab" class="admin-only"><i class="fas fa-plus-circle"></i> Tworzenie</a>
+                <a href="tasks.html"><i class="fas fa-tasks"></i> Zadania</a>
+                <a href="statistics.html"><i class="fas fa-chart-bar"></i> Statystyki</a>
+            </nav>
+        </div>
+        <nav class="nav-auth">
+            <a href="user_profile.html" class="profile-btn" id="profileBtn">
+                <i class="fas fa-user-circle"></i>
+                <span id="userName">Profil</span>
+            </a>
+            <button id="logoutBtn" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Wyloguj
+            </button>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <div class="card welcome-card">
+            <h1>Witaj, <span id="userGreeting">Użytkowniku</span>! 👋</h1>
+            <p>Rozpocznij swoją przygodę z PHP lub kontynuuj naukę tam, gdzie skończyłeś.</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card dashboard-card">
+                <div class="card-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h3>Materiały edukacyjne</h3>
+                <p>Przeglądaj lekcje i tutoriale PHP</p>
+                <a href="materials.html" class="card-btn">Przejdź do materiałów</a>
+            </div>
+
+            <div class="card dashboard-card">
+                <div class="card-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <h3>Zadania praktyczne</h3>
+                <p>Rozwiązuj zadania i testuj swoją wiedzę</p>
+                <a href="tasks.html" class="card-btn">Rozpocznij zadania</a>
+            </div>
+
+            <div class="card dashboard-card">
+                <div class="card-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3>Statystyki postępów</h3>
+                <p>Śledź swoje osiągnięcia i postępy</p>
+                <a href="statistics.html" class="card-btn">Zobacz statystyki</a>
+            </div>
+        </div>
+
+        <div class="card recent-activity">
+            <h2>Ostatnia aktywność</h2>
+            <div class="activity-list" id="activityList">
+                <div class="activity-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Zalogowano pomyślnie</span>
+                    <small>teraz</small>
+                </div>
+                <!-- Tutaj będą dynamicznie dodawane aktywności -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 EduPHP - Platforma edukacyjna</p>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

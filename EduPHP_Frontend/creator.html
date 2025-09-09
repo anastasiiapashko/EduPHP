@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Tworzenie Kursów - EduPHP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <a href="user_main.html" class="logo">
+                <span class="logo-icon"><i class="fas fa-code"></i></span>
+                EduPHP
+            </a>
+            <nav class="nav-main">
+                <a href="kurs.html"><i class="fas fa-book"></i> Kursy</a>
+                <a href="creator.html" id="creatorTab" class="admin-only"><i class="fas fa-plus-circle"></i> Tworzenie</a>
+                <a href="tasks.html"><i class="fas fa-tasks"></i> Zadania</a>
+                <a href="statistics.html"><i class="fas fa-chart-bar"></i> Statystyki</a>
+            </nav>
+        </div>
+        <nav class="nav-auth">
+            <a href="user_profile.html" class="profile-btn" id="profileBtn">
+                <i class="fas fa-user-circle"></i>
+                <span id="userName">Profil</span>
+            </a>
+            <button id="logoutBtn" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Wyloguj
+            </button>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <div class="creator-container">
+            <!-- Panel powitalny -->
+            <section class="welcome-card card">
+                <h1><i class="fas fa-crown"></i> Panel Tworzenia Kursów</h1>
+                <p>Tutaj możesz dodawać i zarządzać materiałami szkoleniowymi dla użytkowników.</p>
+            </section>
+
+            <!-- Formularz dodawania/edycji kursu -->
+            <section class="card">
+                <h2><i class="fas fa-plus-circle"></i> Dodaj nowy kurs</h2>
+                
+                <form id="addCourseForm" class="course-form">
+                    <div class="form-group">
+                        <label for="courseTitle">Tytuł kursu *</label>
+                        <input type="text" id="courseTitle" name="title" required 
+                            placeholder="Np. Podstawy pętli w PHP">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="courseDescription">Opis kursu</label>
+                        <textarea id="courseDescription" name="description" rows="4"
+                                placeholder="Opisz czego dotyczy ten kurs..."></textarea>
+                        <div class="char-counter">0/1000 znaków</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="youtubeLink">Link do filmu YouTube *</label>
+                        <input type="url" id="youtubeLink" name="youtubeLink" required 
+                            placeholder="https://www.youtube.com/watch?v=... lub https://youtu.be/...">
+                        <small class="input-hint">Film zostanie osadzony na stronie</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-plus"></i> Dodaj Kurs
+                        </button>
+                        <button type="button" id="cancelEditBtn" class="btn-secondary" style="display: none;">
+                            <i class="fas fa-times"></i> Anuluj edycję
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Lista istniejących kursów -->
+            <section class="card">
+                <h2><i class="fas fa-list"></i> Twoje kursy</h2>
+                <p>Zarządzaj istniejącymi materiałami szkoleniowymi.</p>
+                
+                <div class="admin-courses-list" id="adminCoursesList">
+                    <div class="loader">
+                        <div class="loader-spinner"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 EduPHP - Platforma edukacyjna</p>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

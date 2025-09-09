@@ -1,0 +1,34 @@
+ <!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rejestracja</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <form id="registerForm">
+        <h2>Rejestracja użytkownika</h2>
+
+        <label for="firstName">Imię</label>
+        <input type="text" id="firstName" name="firstName" required>
+
+        <label for="secondName">Nazwisko</label>
+        <input type="text" id="secondName" name="secondName" required>
+
+        <label for="login">Login</label>
+        <input type="text" id="login" name="login" required>
+
+        <label for="passwd">Hasło</label>
+        <input type="password" id="passwd" name="passwd" required>
+
+        <button type="submit">Zarejestruj się</button>
+
+        <div id = "success" class = "success"></div>
+    </form>
+
+    <script type="module" src="js/main.js"></script>
+   
+</body>
+</html> 
+

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduPHP - Profil użytkownika</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <a href="user_main.html" class="logo">
+                <span class="logo-icon"><i class="fas fa-code"></i></span>
+                EduPHP
+            </a>
+            <nav class="nav-main">
+                <a href="kurs.html"><i class="fas fa-book"></i> Kurs</a>
+                <a href="creator.html" id="creatorTab" class="admin-only"><i class="fas fa-plus-circle"></i> Tworzenie</a>
+                <a href="tasks.html"><i class="fas fa-tasks"></i> Zadania</a>
+                <a href="statistics.html"><i class="fas fa-chart-bar"></i> Statystyki</a>
+            </nav>
+        </div>
+        <nav class="nav-auth">
+            <a href="user_profile.html" class="profile-btn" id="profileBtn">
+                <i class="fas fa-user-circle"></i>
+                <span id="userName">Profil</span>
+            </a>
+            <button id="logoutBtn" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Wyloguj
+            </button>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <div class="card">
+            <h1><i class="fas fa-user-cog"></i> Profil użytkownika</h1>
+            
+            <div class="profile-container">
+                <div class="profile-header">
+                    <div class="avatar-container">
+                        <h3><i class="fas fa-camera"></i> Avatar użytkownika</h3>
+                        <div class="avatar-preview" id="avatarPreview">
+                            <img id="avatarImage" src="" alt="Awatar użytkownika" style="display: none;">
+                            <div class="avatar-placeholder" id="avatarPlaceholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </div>
+                        <div class="avatar-actions">
+                            <label for="avatarUpload" class="avatar-upload-btn">
+                                <i class="fas fa-upload"></i> Wybierz zdjęcie
+                            </label>
+                            <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                            <button id="removeAvatar" class="avatar-remove-btn">
+                                <i class="fas fa-trash"></i> Usuń avatar
+                            </button>
+                        </div>
+                        <p id="avatarMessage" class="avatar-message"></p>
+                    </div>
+                    
+                    <div class="profile-info">
+                        <h2 id="profileUserName">Imię Nazwisko</h2>
+                        <p id="profileUserRole">Rola: Użytkownik</p>
+                    </div>
+                </div>
+
+                
+
+                <div class="profile-content">
+                    <form id="profileForm" class="profile-form">
+                        <!-- Sekcja opisu użytkownika -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-edit"></i> Opis użytkownika</h3>
+                            <div class="form-group">
+                                <label for="userDescription">Opis (max 500 znaków)</label>
+                                <textarea id="userDescription" name="userDescription" 
+                                        maxlength="500" placeholder="Napisz coś o sobie..."
+                                        class="form-input" rows="4"></textarea>
+                            </div>
+                            <button type="button" id="saveDescriptionBtn" class="btn-primary">
+                                <i class="fas fa-save"></i> Zapisz opis
+                            </button>
+                        </div>
+                        <!-- Sekcja danych osobowych -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-user-edit"></i> Dane osobowe</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="firstName">Imię *</label>
+                                    <input type="text" id="firstName" name="firstName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="secondName">Nazwisko *</label>
+                                    <input type="text" id="secondName" name="secondName" required>
+                                </div>
+                            </div>
+                            <button type="button" id="savePersonalDataBtn" class="btn-primary">
+                                <i class="fas fa-save"></i> Zapisz dane osobowe
+                            </button>
+                        </div>
+                        <!-- Sekcja danych logowania -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-key"></i> Dane logowania</h3>
+                            
+                            <div class="form-group">
+                                <label for="login">Login *</label>
+                                <input type="text" id="login" name="login" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="currentPassword">Obecne hasło (wymagane do zmiany danych)</label>
+                                <input type="password" id="currentPassword" name="currentPassword" placeholder="Wpisz obecne hasło">
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="newPassword">Nowe hasło</label>
+                                    <input type="password" id="newPassword" name="newPassword" placeholder="Zostaw puste jeśli nie chcesz zmieniać">
+                                    <div class="password-strength">
+                                        <div class="strength-meter"></div>
+                                    </div>
+                                    <div class="password-feedback"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirmPassword">Potwierdź nowe hasło</label>
+                                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Potwierdź nowe hasło">
+                                    <div id="passwordMatchFeedback" class="password-feedback"></div>
+                                </div>
+                            </div>
+                            <button type="button" id="savePasswordBtn" class="btn-primary">
+                                <i class="fas fa-save"></i> Zmień hasło
+                            </button>
+                        </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 EduPHP - Platforma edukacyjna</p>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

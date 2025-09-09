@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Kursy PHP - EduPHP</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <a href="user_main.html" class="logo">
+                <span class="logo-icon"><i class="fas fa-code"></i></span>
+                EduPHP
+            </a>
+            <nav class="nav-main">
+                <a href="kurs.html" class="active"><i class="fas fa-book"></i> Kursy</a>
+                <a href="creator.html" id="creatorTab" class="admin-only"><i class="fas fa-plus-circle"></i> Tworzenie</a>
+                <a href="tasks.html"><i class="fas fa-tasks"></i> Zadania</a>
+                <a href="statistics.html"><i class="fas fa-chart-bar"></i> Statystyki</a>
+            </nav>
+        </div>
+        <nav class="nav-auth">
+            <a href="user_profile.html" class="profile-btn" id="profileBtn">
+                <i class="fas fa-user-circle"></i>
+                <span id="userName">Profil</span>
+            </a>
+            <button id="logoutBtn" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Wyloguj
+            </button>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <div class="courses-container">
+            <!-- Nagłówek strony kursów -->
+            <section class="welcome-card card">
+                <h1><i class="fas fa-graduation-cap"></i> Kursy PHP</h1>
+                <p>Odkryj nasze materiały szkoleniowe i rozwijaj swoje umiejętności programowania w PHP.</p>
+                <div class="progress-summary">
+                    <div class="progress-item">
+                        <span class="progress-label">Ukończone kursy:</span>
+                        <span class="progress-value" id="completedCount">0</span>
+                    </div>
+                    <div class="progress-item">
+                        <span class="progress-label">Postęp ogólny:</span>
+                        <span class="progress-value" id="overallProgress">0%</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lista kursów -->
+            <section class="card">
+                <h2><i class="fas fa-list"></i> Dostępne kursy</h2>
+                <p>Wybierz kurs, aby rozpocząć naukę. Zaznacz jako ukończony po zrealizowaniu materiału.</p>
+                
+                <div class="courses-list" id="coursesList">
+                    <div class="loader">
+                        <div class="loader-spinner"></div>
+                        <p>Ładowanie kursów...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 EduPHP - Platforma edukacyjna</p>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
