@@ -3,28 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logowanie</title>
+    <title>Logowanie - EduPHP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    
 </head>
 <body>
-    <form id="loginForm">
-        <h2>Logowanie użytkownika</h2>
-
-        <label for="login">Login</label>
-        <input type="text" id="login" name="login" required>
-
-        <label for="passwd">Hasło</label>
-        <input type="password" id="passwd" name="passwd" required>
-
-        <button type="submit">Zaloguj się</button>
-
-        <nav class="nav-main">
-        <a href="register.html"><i class="fas fa-book"></i> Rejestracja</a>
-        </nav>
-        
-        <div id="success" class="success"></div>
-        <div id="error" class="error"></div>
-    </form>
+    <div class="login-container">
+        <div class="login-form-container">
+            <div class="login-header">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>Logowanie</h2>
+                <p>Zaloguj się, aby kontynuować naukę</p>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="login">Login</label>
+                    <input type="text" id="login" name="login" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="passwd">Hasło</label>
+                    <input type="password" id="passwd" name="passwd" required>
+                </div>
+                
+                <button type="submit">Zaloguj się</button>
+                
+                <div id="success" class="success"></div>
+                <div id="error" class="error"></div>
+            </form>
+            
+            <!-- Wersja promocyjna linku rejestracji -->
+            <!-- <div class="register-promo">
+                <p>Nie masz jeszcze konta?</p>
+                <a href="register.html" class="register-link">
+                    <i class="fas fa-user-plus"></i>Zarejestruj się
+                </a>
+            </div> -->
+            
+            <!-- Alternatywna wersja (bardziej subtelna) -->
+            
+            <div class="register-simple">
+                <p>Nie masz jeszcze konta?</p>
+                <a href="register.html" class="register-simple-link">
+                    <i class="fas fa-user-plus"></i>Utwórz konto
+                </a>
+            </div>
+           
+        </div>
+    </div>
 
     <script type="module" src="js/main.js"></script>
 </body>

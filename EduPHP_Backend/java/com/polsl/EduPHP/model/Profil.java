@@ -2,11 +2,14 @@ package com.polsl.EduPHP.model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "profil")
@@ -25,6 +28,7 @@ public class Profil{
 	private LocalDateTime lastLoging;
 	
 	@OneToOne
-	@JoinColumn(name = "idUser", unique = true)
+	@JoinColumn(name = "idUser")
+	@JsonBackReference
 	private User user;
 }

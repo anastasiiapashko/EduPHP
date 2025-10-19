@@ -1,4 +1,4 @@
-import { getUserDataFromStorage, showGlobalError } from './utils.js';
+import { showGlobalError } from './utils.js';
 import { setupAdminPermissions } from './permissions.js';
 function setupUserDashboard() {
     try {

@@ -4,29 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rejestracja</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <form id="registerForm">
-        <h2>Rejestracja użytkownika</h2>
+    <div class="login-container">
+        <div class="login-form-container">
+            <div class="register-header">
+                        <i class="fas fa-graduation-cap"></i>
+                        <h2>Rejestracja</h2>
+                        <p>Zarejestruj się, aby zacząć naukę</p>
+                    </div>
+            <form id="registerForm">
+                <label for="firstName">Imię</label>
+                <input type="text" id="firstName" name="firstName" required>
 
-        <label for="firstName">Imię</label>
-        <input type="text" id="firstName" name="firstName" required>
+                <label for="secondName">Nazwisko</label>
+                <input type="text" id="secondName" name="secondName" required>
 
-        <label for="secondName">Nazwisko</label>
-        <input type="text" id="secondName" name="secondName" required>
+                <label for="login">Login</label>
+                <input type="text" id="login" name="login" required>
 
-        <label for="login">Login</label>
-        <input type="text" id="login" name="login" required>
+                <label for="passwd">Hasło</label>
+                <input type="password" id="passwd" name="passwd" required>
 
-        <label for="passwd">Hasło</label>
-        <input type="password" id="passwd" name="passwd" required>
+                <button type="submit">Zarejestruj się</button>
 
-        <button type="submit">Zarejestruj się</button>
-
-        <div id = "success" class = "success"></div>
-    </form>
-
+                <div id = "success" class = "success"></div>
+            </form>
+        </div>
+    </div>
+    
     <script type="module" src="js/main.js"></script>
    
 </body>

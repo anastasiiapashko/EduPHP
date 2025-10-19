@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Zadania - EduPHP</title>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <a href="user_main.html" class="logo">
+                <span class="logo-icon"><i class="fas fa-code"></i></span>
+                EduPHP
+            </a>
+            <nav class="nav-main">
+                <a href="kurs.html"><i class="fas fa-book"></i> Kursy</a>
+                <a href="creator.html" id="creatorTab" class="admin-only"><i class="fas fa-plus-circle"></i> Tworzenie</a>
+                <a href="tasks.html" class="active"><i class="fas fa-tasks"></i> Zadania</a>
+                <a href="application.html"><i class="fas fa-list-alt"></i> Zgłoszenia</a>
+                <a href="statistics.html"><i class="fas fa-chart-bar"></i> Statystyki</a>
+            </nav>
+        </div>
+        <nav class="nav-auth">
+            <a href="user_profile.html" class="profile-btn" id="profileBtn">
+                <i class="fas fa-user-circle"></i>
+                <span id="userName">Profil</span>
+            </a>
+            <button id="logoutBtn" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Wyloguj
+            </button>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <div class="tasks-container">
+            <!-- Nagłówek strony zadań -->
+            <section class="welcome-card card">
+                <h1><i class="fas fa-tasks"></i> Zadania</h1>
+                <p>Weź udział i rozwiązuj zadania programistyczne!</p>
+            </section>
+
+            <!-- Filtry i wyszukiwanie -->
+            <section class="card">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label for="searchInput"><i class="fas fa-search"></i> Szukaj:</label>
+                        <input type="text" id="searchInput" placeholder="Szukaj w tytułach i opisach...">
+                    </div>
+                    <div class="filter-group">
+                        <label for="difficultyFilter"><i class="fas fa-signal"></i> Poziom trudności:</label>
+                        <select id="difficultyFilter">
+                            <option value="all">Wszystkie poziomy</option>
+                            <option value="łatwy">Łatwy</option>
+                            <option value="średni">Średni</option>
+                            <option value="trudny">Trudny</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="sortSelect"><i class="fas fa-sort"></i> Sortuj:</label>
+                        <select id="sortSelect">
+                            <option value="newest">Od najnowszych</option>
+                            <option value="oldest">Od najstarszych</option>
+                            <option value="difficulty_asc">Poziom trudności (rosnąco)</option>
+                            <option value="difficulty_desc">Poziom trudności (malejąco)</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lista zadań -->
+            <section class="card">
+                <div class="tasks-header">
+                    <h2><i class="fas fa-list"></i> Lista zadań</h2>
+                </div>
+                
+                <div class="tasks-info">
+                    <span id="tasksCount">Ładowanie...</span>
+                </div>
+                
+                <div class="tasks-list" id="tasksList">
+                    <div class="loader">
+                        <div class="loader-spinner"></div>
+                        <p>Ładowanie zadań...</p>
+                    </div>
+                </div>
+
+                <!-- Paginacja -->
+                <div class="pagination" id="pagination">
+                    <!-- Paginacja zostanie wygenerowana dynamicznie -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 EduPHP - Platforma edukacyjna</p>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

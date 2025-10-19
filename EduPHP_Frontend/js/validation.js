@@ -1,22 +1,23 @@
 function setupDescriptionCounter() {
-    const textarea = document.getElementById('userDescription');
-    if (!textarea) return;
+    // Dla profilu użytkownika
+    const userDescription = document.getElementById('userDescription');
+    if (userDescription) {
+        const counter = document.createElement('div');
+        counter.className = 'char-counter';
+        counter.textContent = '0/500 znaków';
+        userDescription.parentNode.appendChild(counter);
 
-    const counter = document.createElement('div');
-    counter.className = 'char-counter';
-    counter.textContent = '0/500 znaków';
-    textarea.parentNode.appendChild(counter);
-
-    textarea.addEventListener('input', function() {
-        const length = this.value.length;
-        counter.textContent = `${length}/500 znaków`;
-        
-        if (length > 450) {
-            counter.classList.add('warning');
-        } else {
-            counter.classList.remove('warning');
-        }
-    });
+        userDescription.addEventListener('input', function() {
+            const length = this.value.length;
+            counter.textContent = `${length}/500 znaków`;
+            
+            if (length > 450) {
+                counter.classList.add('warning');
+            } else {
+                counter.classList.remove('warning');
+            }
+        });
+    }
 }
 
 function setupPasswordValidation() {

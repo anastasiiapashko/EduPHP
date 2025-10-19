@@ -2,7 +2,7 @@
 <html lang="pl" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <title>Kursy PHP - EduPHP</title>
+    <title>Zgłoś problem - EduPHP</title>
     <script src="script.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -37,41 +37,34 @@
     </header>
 
     <main>
-        <div class="courses-container">
-            <!-- Nagłówek strony kursów -->
-            <section class="welcome-card card">
-                <h1><i class="fas fa-graduation-cap"></i> Kursy PHP</h1>
-                <p>Odkryj nasze materiały szkoleniowe i rozwijaj swoje umiejętności programowania w PHP.</p>
-                <div class="progress-summary">
-                    <div class="progress-item">
-                        <span class="progress-label">Ukończone kursy:</span>
-                        <span class="progress-value" id="completedCount">0</span>
-                    </div>
-                    <div class="progress-item">
-                        <span class="progress-label">Postęp ogólny:</span>
-                        <span class="progress-value" id="overallProgress">0%</span>
-                    </div>
-                </div>
-
-                <div class="application-section">
-                    <p>Masz problem z kursem lub platformą?</p>
-                    <a href="application_send.html" class="application-btn">
-                        <i class="fas fa-exclamation-circle"></i> Zgłoś problem
-                    </a>
-                </div>
-            </section>
-
-            <!-- Lista kursów -->
+        <div class="application-container">
+            <!-- Formularz zgłoszenia -->
             <section class="card">
-                <h2><i class="fas fa-list"></i> Dostępne kursy</h2>
-                <p>Wybierz kurs, aby rozpocząć naukę. Zaznacz jako ukończony po zrealizowaniu materiału.</p>
+                <h1><i class="fas fa-exclamation-circle"></i> Zgłoś problem</h1>
+                <p>Wypełnij formularz, aby zgłosić problem związany z kursem lub platformą.</p>
                 
-                <div class="courses-list" id="coursesList">
-                    <div class="loader">
-                        <div class="loader-spinner"></div>
-                        <p>Ładowanie kursów...</p>
+                <form id="applicationForm" class="application-form">
+                    <div class="form-group">
+                        <label for="courseSelect">Tytuł zgłoszenia: (wybierz czego dotyczy zgłoszenie)</label>
+                        <input type="text" id="applicationTitle" name="title" placeholder="Wpisz tytuł zgłoszenia" required>
+                        
                     </div>
-                </div>
+                    
+                    <div class="form-group">
+                        <label for="applicationDescription">Opis problemu:</label>
+                        <textarea id="applicationDescription" name="description" rows="6" placeholder="Opisz szczegółowo problem, który napotkałeś..." required></textarea>
+                        <div class="char-counter">0/1000 znaków</div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="window.location.href='kurs.html'">
+                            <i class="fas fa-arrow-left"></i> Anuluj
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i> Wyślij zgłoszenie
+                        </button>
+                    </div>
+                </form>
             </section>
         </div>
     </main>

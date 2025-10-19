@@ -94,11 +94,23 @@ function setElementText(elementId, text) {
     }
 }
 
-function updateCharCounter(length) {
+function updateCharCounter(length, maxLength = 500) {
     const counter = document.querySelector('.char-counter');
-    if (counter) {
-        counter.textContent = `${length}/500 znaków`;
-        counter.classList.toggle('warning', length > 450);
+    const textarea = document.getElementById('applicationDescription');
+    
+    if (counter && textarea) {
+        counter.textContent = `${length}/${maxLength} znaków`;
+        counter.classList.toggle('warning', length > maxLength * 0.9); // ostrzeżenie przy 90%
+        
+        // Blokuj dalsze wpisywanie po przekroczeniu limitu
+        if (length > maxLength) {
+            textarea.value = textarea.value.substring(0, maxLength);
+            counter.textContent = `${maxLength}/${maxLength} znaków - limit osiągnięty!`;
+            counter.style.color = '#ff4757';
+            counter.classList.add('warning');
+        } else {
+            counter.style.color = '';
+        }
     }
 }
 

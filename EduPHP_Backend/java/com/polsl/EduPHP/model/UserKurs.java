@@ -1,11 +1,14 @@
 package com.polsl.EduPHP.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "user_kurs")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserKurs {
@@ -16,10 +19,12 @@ public class UserKurs {
     
     @ManyToOne
     @JoinColumn(name = "idUser")
+    @JsonManagedReference
     private User user;
     
     @ManyToOne
     @JoinColumn(name = "idKursu")
+    @JsonManagedReference
     private Kurs kurs;
     
     private Boolean ukonczony;

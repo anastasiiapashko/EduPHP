@@ -1,7 +1,8 @@
-package com.polsl.EduPHP.service;
+package com.polsl.EduPHP.Service;
 
 import com.polsl.EduPHP.model.Profil;
 import com.polsl.EduPHP.model.User;
+import com.polsl.EduPHP.DTO.ProfilDTO;
 import com.polsl.EduPHP.Repository.ProfilRepository;
 import com.polsl.EduPHP.Repository.UserRepository;
 
@@ -143,5 +144,21 @@ public class ProfilService {
             e.printStackTrace();
             throw e;
         }
+    }
+    
+ // W klasie ProfilService dodaj metodę:
+    public ProfilDTO convertToDTO(Profil profil) {
+        if (profil == null) {
+            return null;
+        }
+        
+        ProfilDTO dto = new ProfilDTO();
+        dto.setIdProf(profil.getIdProf());
+        dto.setAvatarType(profil.getAvatarType());
+        dto.setOpisUser(profil.getOpisUser());
+        dto.setLastLoging(profil.getLastLoging());
+        dto.setUserId(profil.getUser() != null ? profil.getUser().getIdUser() : null);
+        
+        return dto;
     }
 }

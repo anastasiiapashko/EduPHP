@@ -1,7 +1,8 @@
 package com.polsl.EduPHP.Controller;
 
+import com.polsl.EduPHP.Service.UserKursService;
 import com.polsl.EduPHP.model.UserKurs;
-import com.polsl.EduPHP.service.UserKursService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -49,6 +49,7 @@ async function loadUserProfileData() {
             fillProfileFormWithData(userData, {});
         }
 
+        
         // Pobierz avatar po załadowaniu danych profilu
         await fetchAvatar(userId);
     } catch (error) {

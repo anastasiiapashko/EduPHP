@@ -1,4 +1,4 @@
-import { showGlobalError, showFormError, validateRegistrationForm, showFieldError } from './utils.js';
+import { showFormError, validateRegistrationForm, showFieldError } from './utils.js';
 
 function setupRegistrationForm() {
     try {
@@ -19,9 +19,11 @@ function setupRegistrationForm() {
                 passwd: document.getElementById('passwd').value,
             };
 
+            // ✅ PRZENIESIONY przed try - dostępny w całej funkcji
+            const submitButton = registerForm.querySelector('button[type="submit"]');
+            let originalText = submitButton.textContent; // ✅ użyj let zamiast const
+
             try {
-                const submitButton = registerForm.querySelector('button[type="submit"]');
-                const originalText = submitButton.textContent;
                 submitButton.textContent = 'Rejestruję...';
                 submitButton.disabled = true;
 
@@ -34,6 +36,8 @@ function setupRegistrationForm() {
                     body: JSON.stringify(formData)
                 });
 
+                const responseData = await response.json(); // ✅ WAŻNE: parsuj odpowiedź
+
                 if (response.ok) {
                     document.getElementById('success').innerText = 'Rejestracja udana! Za chwilę zostaniesz przekierowany...';
                     registerForm.reset();
@@ -42,14 +46,14 @@ function setupRegistrationForm() {
                         window.location.href = 'login.html';
                     }, 2000);
                 } else {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || `Błąd serwera: ${response.status}`);
+                    // ✅ Poprawna obsługa błędów z backendu
+                    const errorMessage = responseData.message || `Błąd serwera: ${response.status}`;
+                    throw new Error(errorMessage);
                 }
             } catch (error) {
                 console.error('Błąd podczas rejestracji:', error);
                 showFormError('registerForm', error.message || 'Błąd podczas rejestracji. Proszę spróbować jeszcze raz.');
             } finally {
-                const submitButton = registerForm.querySelector('button[type="submit"]');
                 if (submitButton) {
                     submitButton.textContent = originalText;
                     submitButton.disabled = false;
@@ -78,17 +82,19 @@ function setupLoginForm() {
             }
             if (successDiv) successDiv.textContent = '';
 
+            // ✅ PRZENIESIONY przed try - dostępny w całej funkcji
             const submitButton = loginForm.querySelector('button[type="submit"]');
-            const originalText = submitButton.textContent;
-            submitButton.textContent = 'Logowanie...';
-            submitButton.disabled = true;
-
-            const loginData = {
-                login: document.getElementById('login').value.trim(),
-                passwd: document.getElementById('passwd').value
-            };
+            let originalText = submitButton.textContent; // ✅ użyj let zamiast const
 
             try {
+                submitButton.textContent = 'Logowanie...';
+                submitButton.disabled = true;
+
+                const loginData = {
+                    login: document.getElementById('login').value.trim(),
+                    passwd: document.getElementById('passwd').value
+                };
+
                 console.log('Wysyłam:', loginData);
                 
                 const response = await fetch('http://localhost:8082/api/checkLogin', {
@@ -141,8 +147,10 @@ function setupLoginForm() {
                     }, 5000);
                 }
             } finally {
-                submitButton.textContent = originalText;
-                submitButton.disabled = false;
+                if (submitButton) {
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                }
             }
         });
     } catch (error) {
@@ -150,4 +158,44 @@ function setupLoginForm() {
     }
 }
 
-export { setupRegistrationForm, setupLoginForm };
+function checkAuth() {
+    try {
+        const userData = localStorage.getItem('userData');
+        if (!userData) return false;
+        
+        const user = JSON.parse(userData);
+        return !!(user && user.id); // Zwraca true jeśli użytkownik ma ID
+    } catch (error) {
+        console.error('Błąd podczas sprawdzania autoryzacji:', error);
+        return false;
+    }
+} 
+
+function getCurrentUserId() {
+    try {
+        const userData = localStorage.getItem('userData');
+        if (!userData) return null;
+        
+        const user = JSON.parse(userData);
+        return user ? user.id : null;
+    } catch (error) {
+        console.error('Błąd podczas pobierania ID użytkownika:', error);
+        return null;
+    }
+}
+
+ function getCurrentUser() {
+    try {
+        const userData = localStorage.getItem('userData');
+        return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+        console.error('Błąd podczas pobierania danych użytkownika:', error);
+        return null;
+    }
+}
+
+function logout(){
+    localStorage.removeItem('userData');
+            window.location.href = 'index.html';
+}
+export {logout, setupRegistrationForm, setupLoginForm, getCurrentUser, getCurrentUserId, checkAuth };

@@ -1,9 +1,10 @@
 package com.polsl.EduPHP.Controller;
 
+import com.polsl.EduPHP.DTO.ProfilDTO;
+import com.polsl.EduPHP.Service.ProfilService;
+import com.polsl.EduPHP.Service.UserService;
 import com.polsl.EduPHP.model.Profil;
 import com.polsl.EduPHP.model.User;
-import com.polsl.EduPHP.service.ProfilService;
-import com.polsl.EduPHP.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -11,9 +12,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/profil")
+@CrossOrigin(origins = "http://127.0.0.1:5500", allowCredentials = "true")
 public class ProfilController {
     
     @Autowired
@@ -24,12 +27,11 @@ public class ProfilController {
     
     // Tworzenie profilu dla użytkownika
     @PostMapping("/create/{userId}")
-    @CrossOrigin(origins = "http://127.0.0.1:5500", allowCredentials = "true")
     public ResponseEntity<String> createProfil(@PathVariable Integer userId) {
         try {
             // Sprawdź czy użytkownik istnieje
-            User user = userService.findById(userId);
-            if (user == null) {
+        	Optional<User> userOpt = userService.findById(userId);
+            if (userOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
             
@@ -39,8 +41,7 @@ public class ProfilController {
                 return ResponseEntity.badRequest().body("Profil już istnieje");
             }
             
-            // Utwórz nowy profil
-            Profil newProfil = profilService.createProfilForUser(userId);
+            profilService.createProfilForUser(userId);
             
             return ResponseEntity.ok("Profil utworzony pomyślnie");
             
@@ -52,7 +53,6 @@ public class ProfilController {
     
     //1. Upload zdjęcia
     @PostMapping("/upload-avatar/{userId}")
-    @CrossOrigin(origins = "http://127.0.0.1:5500", allowCredentials = "true")
     public ResponseEntity<String> uploadAvatar(
             @PathVariable Integer userId,
             @RequestParam("file") MultipartFile file) {
@@ -75,7 +75,6 @@ public class ProfilController {
     
     // 2. POBERZ ZDJĘCIE
     @GetMapping("/avatar/{userId}")
-    @CrossOrigin(origins = "http://127.0.0.1:5500", allowCredentials = "true")
     public ResponseEntity<byte[]> getAvatar(@PathVariable Integer userId) {
         byte[] avatar = profilService.getAvatar(userId);
         String avatarType = profilService.getAvatarType(userId);
@@ -93,26 +92,24 @@ public class ProfilController {
     
     // 3. USUŃ ZDJĘCIE
     @DeleteMapping("/remove-avatar/{userId}")
-    @CrossOrigin(origins = "http://127.0.0.1:5500", allowCredentials = "true")
     public ResponseEntity<String> removeAvatar(@PathVariable Integer userId) {
         profilService.removeAvatar(userId);
         return ResponseEntity.ok("Zdjęcie usunięte 🗑️");
     }
     
-    // 4. POKAŻ PROFIL - TU BYŁ BŁĄD!
+    // 4. POKAŻ PROFIL 
     @GetMapping("/{userId}")
-    @CrossOrigin(origins = "http://127.0.0.1:5500", allowCredentials = "true")
-    public ResponseEntity<Profil> getProfil(@PathVariable Integer userId) {
+    public ResponseEntity<ProfilDTO> getProfil(@PathVariable Integer userId) {
         Profil profil = profilService.getProfilByUserId(userId);
         if (profil != null) {
-            return ResponseEntity.ok(profil);
+            ProfilDTO profilDTO = profilService.convertToDTO(profil);
+            return ResponseEntity.ok(profilDTO);
         }
         return ResponseEntity.notFound().build();
     }
     
     //5. aktualizacja danych osoby
     @PutMapping("/update-personal/{userId}")
-    @CrossOrigin(origins = "http://127.0.0.1:5500", allowCredentials = "true")
     public ResponseEntity<String> updatePersonalData(
             @PathVariable Integer userId,
             @RequestBody Map<String, String> personalData) {
@@ -127,7 +124,6 @@ public class ProfilController {
     
     //6. aktualizacja opisu
     @PutMapping("/update-description/{userId}")
-    @CrossOrigin(origins = "http://127.0.0.1:5500", allowCredentials = "true")
     public ResponseEntity<String> updateDescription(
             @PathVariable Integer userId,
             @RequestParam String description) {
@@ -141,9 +137,7 @@ public class ProfilController {
     }
     
     //7. aktualizacja hasła
-  //7. aktualizacja hasła - POPRAWIONE
     @PutMapping("/update-password/{userId}")
-    @CrossOrigin(origins = "http://127.0.0.1:5500", allowCredentials = "true")
     public ResponseEntity<String> updatePassword(
             @PathVariable Integer userId,
             @RequestBody Map<String, String> passwordData) {
@@ -174,9 +168,8 @@ public class ProfilController {
         }
     }
     
-    // DODAJ TĘ METODĘ DLA OBSŁUGI PREFLIGHT REQUESTS
+    // Metoda DLA OBSŁUGI PREFLIGHT REQUESTS
     @RequestMapping(method = RequestMethod.OPTIONS, value = "/**")
-    @CrossOrigin(origins = "http://127.0.0.1:5500", allowCredentials = "true")
     public ResponseEntity<?> handleOptions() {
         return ResponseEntity.ok().build();
     }

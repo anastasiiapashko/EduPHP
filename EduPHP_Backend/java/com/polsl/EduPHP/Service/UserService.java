@@ -1,19 +1,27 @@
-package com.polsl.EduPHP.service;
+package com.polsl.EduPHP.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.polsl.EduPHP.DTO.UserLogowanieDTO;
+import com.polsl.EduPHP.DTO.UserRegisterDTO;
 import com.polsl.EduPHP.Repository.ProfilRepository;
+import com.polsl.EduPHP.Repository.UserKursRepository;
 import com.polsl.EduPHP.Repository.UserRepository;
 import com.polsl.EduPHP.model.Profil;
 import com.polsl.EduPHP.model.User;
+import com.polsl.EduPHP.model.UserKurs;
+
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class UserService {
 
 	@Autowired
@@ -22,15 +30,46 @@ public class UserService {
 	@Autowired 
     private ProfilRepository profilRepository;
 	
-	public User zapiszRejestracje(User rejestracja) {
-        // 1. Zapisz użytkownika
-        User savedUser = userRepository.save(rejestracja);
-        
-        // 2. AUTOMATYCZNIE UTWÓRZ PROFIL DLA TEGO UŻYTKOWNIKA
-        createProfileForUser(savedUser);
-        
-        return savedUser;
-    }
+	@Autowired 
+    private UserKursRepository userKursRepository;
+    
+	public User zapiszRejestracje(UserRegisterDTO rejestracja) {
+
+	    // ✅ WALIDACJA
+	    Optional<User> existingUser = userRepository.findByLogin(rejestracja.getLogin());
+	    if (existingUser.isPresent()) {
+	        throw new IllegalArgumentException("Login '" + rejestracja.getLogin() + "' jest już zajęty");
+	    }
+	    if (rejestracja.getLogin() == null || rejestracja.getLogin().trim().isEmpty()) {
+	        throw new IllegalArgumentException("Login jest wymagany");
+	    }
+	    if (rejestracja.getLogin().length() < 3) {
+	        throw new IllegalArgumentException("Login musi mieć co najmniej 3 znaki");
+	    }
+	    if (rejestracja.getPasswd() == null || rejestracja.getPasswd().trim().isEmpty()) {
+	        throw new IllegalArgumentException("Hasło jest wymagane");
+	    }
+	    if (rejestracja.getPasswd().length() < 6) {
+	        throw new IllegalArgumentException("Hasło musi mieć co najmniej 6 znaków");
+	    }
+
+	    // ✅ MAPOWANIE DTO → ENCJA
+	    User user = new User();
+	    user.setFirstName(rejestracja.getFirstName());
+	    user.setSecondName(rejestracja.getSecondName());
+	    user.setLogin(rejestracja.getLogin());
+	    user.setPasswd(rejestracja.getPasswd());
+	    user.setRola("user");
+
+	    // ✅ ZAPISZ USERA
+	    User savedUser = userRepository.save(user);
+
+	    // ✅ AUTOMATYCZNIE UTWÓRZ PROFIL
+	    createProfileForUser(savedUser);
+
+	    return savedUser;
+	}
+
 	
 	// METODA DO TWORZENIA PROFILU
     private void createProfileForUser(User user) {
@@ -44,19 +83,17 @@ public class UserService {
         profilRepository.save(profil);
     }
     
-	// DODANA METODA - znajdź użytkownika po ID
-    public User findById(Integer userId) {
-        Optional<User> user = userRepository.findById(userId);
-        return user.orElse(null);
+	// znajdź użytkownika po ID
+    public Optional<User> findById(Integer userId) {
+        return userRepository.findById(userId);
     }
     
-    // DODANA METODA - znajdź użytkownika po loginie (jeśli jeszcze nie ma)
-    public User findByLogin(String login) {
-        Optional<User> user = userRepository.findByLogin(login);
-        return user.orElse(null);
+    // znajdź użytkownika po loginie (jeśli jeszcze nie ma)
+    public Optional<User> findByLogin(String login) {
+        return userRepository.findByLogin(login);
     }
     
-	public Map<String, Object> sprawdzLogin(User logowanie) {
+	public Map<String, Object> sprawdzLogin(UserLogowanieDTO logowanie) {
         Map<String, Object> response = new HashMap<>();
         
         try {
@@ -129,5 +166,21 @@ public class UserService {
 	    }
 	}
 	
-	
+	public void deleteUserWithCascade(Integer userId) {
+		//1. najpierw usuń zrobione kursy
+		List<UserKurs> userKursy = userKursRepository.findByUser_IdUser(userId);
+        if (userKursy != null && !userKursy.isEmpty()) {
+        	userKursRepository.deleteAll(userKursy);
+        } 
+        
+        // 2. usuń profil
+        Profil profil = profilRepository.findByUserIdUser(userId);
+        if (profil != null) {
+            profilRepository.delete(profil);
+        }
+        
+        
+        // 3. Potem usuń usera
+        userRepository.deleteById(userId);
+    }
 }

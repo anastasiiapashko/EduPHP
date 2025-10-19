@@ -1,6 +1,5 @@
 // permissions.js - moduł do zarządzania uprawnieniami użytkownika
 
-import { showGlobalError } from './utils.js';
 
 // Funkcja sprawdzająca czy użytkownik jest administratorem
 export function isAdmin() {

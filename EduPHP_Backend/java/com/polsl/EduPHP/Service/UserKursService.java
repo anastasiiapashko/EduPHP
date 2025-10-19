@@ -1,4 +1,4 @@
-package com.polsl.EduPHP.service;
+package com.polsl.EduPHP.Service;
 
 import com.polsl.EduPHP.model.*;
 import com.polsl.EduPHP.Repository.*;

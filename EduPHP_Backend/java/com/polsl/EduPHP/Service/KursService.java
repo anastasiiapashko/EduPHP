@@ -1,4 +1,4 @@
-package com.polsl.EduPHP.service;
+package com.polsl.EduPHP.Service;
 
 import com.polsl.EduPHP.model.*;
 import com.polsl.EduPHP.Repository.*;
@@ -33,9 +33,7 @@ public class KursService {
     }
     
     public Kurs saveKurs(Kurs kurs) {
-        if (kurs.getIdKursu() == null) {
-            kurs.setIdKursu(findNextAvailableId());
-        }
+        // ✅ USUŃ ręczne zarządzanie ID - Hibernate sam się tym zajmie
         return kursRepository.save(kurs);
     }
     
@@ -58,29 +56,8 @@ public class KursService {
         }
     }
     
-    // Nowa metoda do znajdowania najmniejszego dostępnego ID
-    private Integer findNextAvailableId() {
-        List<Kurs> allKursy = (List<Kurs>) kursRepository.findAll();
-        if (allKursy.isEmpty()) {
-            return 1; // Pusta tabela -> ID = 1
-        }
-        
-        // Znajdź wszystkie użyte ID i posortuj
-        List<Integer> usedIds = allKursy.stream()
-                .map(Kurs::getIdKursu)
-                .sorted()
-                .collect(Collectors.toList());
-        
-        // Znajdź pierwszą lukę w numeracji
-        int expectedId = 1;
-        for (Integer id : usedIds) {
-            if (id > expectedId) {
-                return expectedId; // Zwróć pierwszą brakującą liczbę
-            }
-            expectedId = id + 1;
-        }
-        return expectedId; // Jeśli nie ma luk, zwróć kolejny ID
-    }
+    // ✅ USUŃ CAŁĄ METODĘ findNextAvailableId - nie jest potrzebna
+    // Hibernate automatycznie użyje SEQUENCE/IDENTITY zdefiniowanej w entity
     
     public UserKurs addUserToKurs(Integer userId, Integer kursId, Boolean ukonczony) {
         Optional<User> userOpt = userRepository.findById(userId);
