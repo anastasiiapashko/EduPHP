@@ -137,6 +137,27 @@
                                 <i class="fas fa-save"></i> Zmień hasło
                             </button>
                         </div>
+                        <!-- Usunięcie profilu -->
+                        <div class="form-section danger-zone">
+                            <h3><i class="fas fa-exclamation-triangle"></i> Strefa niebezpieczna</h3>
+                            <div class="danger-warning">
+                                <i class="fas fa-skull-crossbones"></i>
+                                <strong>Uwaga!</strong> Ta akcja jest nieodwracalna.
+                            </div>
+                            <div class="danger-actions">
+                                <button type="button" id="deleteProfileBtn" class="btn-danger">
+                                    <i class="fas fa-trash"></i> Usuń mój profil
+                                </button>
+                            </div>
+                            <div class="danger-description">
+                                <p>Usunięcie profilu spowoduje:</p>
+                                <ul>
+                                    <li>Usunięcie wszystkich Twoich danych osobowych</li>
+                                    <li>Usunięcie Twoich zgłoszeń i postępów w zadaniach</li>
+                                    <li>Trwałe usunięcie konta z systemu</li>
+                                    <li>Natychmiastowe wylogowanie</li>
+                                </ul>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -149,5 +170,37 @@
     </footer>
 
     <script type="module" src="js/main.js"></script>
+
+    
+    <div id="deleteConfirmationModal" class="confirmation-modal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h2 class="modal-title">Potwierdzenie usunięcia profilu</h2>
+            <p class="modal-message">
+                Czy na pewno chcesz usunąć swój profil? Ta akcja jest <strong>nieodwracalna</strong> 
+                i spowoduje utratę wszystkich Twoich danych w systemie.
+            </p>
+            
+            <div class="password-confirm">
+                <label for="confirmPasswordInput">
+                    <i class="fas fa-key"></i> Wprowadź swoje hasło aby potwierdzić:
+                </label>
+                <input type="password" id="confirmPasswordInput" 
+                    placeholder="Wprowadź swoje obecne hasło">
+                <div id="passwordError" class="error-message" style="display: none; margin-top: 10px;"></div>
+            </div>
+            
+            <div class="modal-actions">
+                <button id="confirmDeleteBtn" class="modal-btn confirm" disabled>
+                    <i class="fas fa-trash"></i> Tak, usuń profil
+                </button>
+                <button id="cancelDeleteBtn" class="modal-btn cancel">
+                    <i class="fas fa-times"></i> Anuluj
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

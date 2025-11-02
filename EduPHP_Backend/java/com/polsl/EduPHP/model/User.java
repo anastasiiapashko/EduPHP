@@ -30,17 +30,21 @@ public class User {
     
     private String rola = "user";
     
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnore
     private Set<UserKurs> userKursy = new HashSet<>();
     
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "user", orphanRemoval = true)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     @JsonIgnore
     private Profil profil;
     
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnore
-    private Set<Application> userApplication = new HashSet<>();
+    private Set<UserCompain> userApplication = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<UserTask> userTasks = new HashSet<>();
 }

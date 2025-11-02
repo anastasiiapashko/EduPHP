@@ -13,7 +13,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user-kurs")
-@CrossOrigin(origins = "http://127.0.0.1:5500", allowCredentials = "true")
 public class UserKursController {
     
     @Autowired

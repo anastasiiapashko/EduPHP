@@ -12,11 +12,6 @@ export function setupApplicationsPage() {
     if (!applicationsList) return;
     
     console.log('Inicjalizacja strony zgłoszeń...');
-    
-    if (!checkAuth()) {
-        window.location.href = 'login.html';
-        return;
-    }
 
     setupEventListeners();
     loadApplications();

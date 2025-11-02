@@ -23,6 +23,12 @@ public class KursService {
     
     @Autowired
     private UserKursRepository userKursRepository;
+    
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
+    private UserTaskRepository userTaskRepository;
 
     public List<Kurs> getAllKursy() {
         return (List<Kurs>) kursRepository.findAll();
@@ -43,21 +49,29 @@ public class KursService {
             throw new IllegalArgumentException("Kurs o ID " + id + " nie istnieje");
         }
         
-        // Usuń powiązane rekordy w user_kurs
+        // 1. Najpierw usuń UserTask (rozwiązania zadań) - NAJNIŻSZE
+        List<Task> tasks = taskRepository.findByKurs_IdKursu(id);
+        for (Task task : tasks) {
+            List<UserTask> userTasks = userTaskRepository.findByTask_IdTask(task.getIdTask());
+            if (!userTasks.isEmpty()) {
+                userTaskRepository.deleteAll(userTasks);
+            }
+        }
+        
+        // 2. Potem usuń Task (zadania)
+        if (!tasks.isEmpty()) {
+            taskRepository.deleteAll(tasks);
+        }
+        
+        // 3. Potem usuń UserKurs (zapisy na kursy)
         List<UserKurs> userKursy = userKursRepository.findByKurs_IdKursu(id);
         if (!userKursy.isEmpty()) {
             userKursRepository.deleteAll(userKursy);
         }
         
-        try {
-            kursRepository.deleteById(id);
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalStateException("Nie można usunąć kursu z powodu powiązanych danych: " + e.getMessage());
-        }
+        // 4. Na końcu usuń kurs
+        kursRepository.deleteById(id);
     }
-    
-    // ✅ USUŃ CAŁĄ METODĘ findNextAvailableId - nie jest potrzebna
-    // Hibernate automatycznie użyje SEQUENCE/IDENTITY zdefiniowanej w entity
     
     public UserKurs addUserToKurs(Integer userId, Integer kursId, Boolean ukonczony) {
         Optional<User> userOpt = userRepository.findById(userId);

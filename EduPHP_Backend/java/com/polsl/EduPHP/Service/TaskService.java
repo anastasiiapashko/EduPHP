@@ -1,9 +1,7 @@
 package com.polsl.EduPHP.Service;
 
-import com.polsl.EduPHP.model.Task;
-import com.polsl.EduPHP.model.Kurs;
-import com.polsl.EduPHP.Repository.TaskRepository;
-import com.polsl.EduPHP.Repository.KursRepository;
+import com.polsl.EduPHP.model.*;
+import com.polsl.EduPHP.Repository.*;
 import com.polsl.EduPHP.DTO.TaskDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +20,9 @@ public class TaskService {
     
     @Autowired
     private KursRepository kursRepository;
+    
+    @Autowired
+    private UserTaskRepository userTaskRepository;
 
     public List<Task> getAllTasks() {
         return (List<Task>) taskRepository.findAll();
@@ -122,11 +123,28 @@ public class TaskService {
         if (!taskRepository.existsById(id)) {
             throw new IllegalArgumentException("Task o ID " + id + " nie istnieje");
         }
+        
+        // 1. Najpierw usuń UserTask (rozwiązania)
+        List<UserTask> userTasks = userTaskRepository.findByTask_IdTask(id);
+        if (!userTasks.isEmpty()) {
+            userTaskRepository.deleteAll(userTasks);
+        }
+        
+        // 2. Potem usuń task
         taskRepository.deleteById(id);
     }
     
     public void deleteTasksByKursId(Integer kursId) {
         List<Task> tasks = taskRepository.findByKurs_IdKursu(kursId);
+        
+        //1. Najpierw usuń UserTask dla każdego taska
+        for (Task task : tasks) {
+        	List<UserTask> userTasks = userTaskRepository.findByTask_IdTask(task.getIdTask());
+        	if (!userTasks.isEmpty()) {
+        		userTaskRepository.deleteAll(userTasks);
+        	}
+        }
+        
         taskRepository.deleteAll(tasks);
     }
     

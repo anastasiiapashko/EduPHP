@@ -11,6 +11,7 @@ async function setupProfilePage() {
         await loadUserProfileData();
         setupAvatarActions();
         setupIndependentSaveButtons();
+        setupProfileDeletion(); // ✅ DODANE - obsługa usuwania profilu
         
         const cancelBtn = document.getElementById('cancelBtn');
         if (cancelBtn) {
@@ -21,6 +22,134 @@ async function setupProfilePage() {
         
     } catch (error) {
         console.error('Błąd podczas inicjalizacji strony profilu:', error);
+    }
+}
+
+// ✅ DODANE - Funkcja obsługująca usuwanie profilu
+function setupProfileDeletion() {
+    const deleteProfileBtn = document.getElementById('deleteProfileBtn');
+    const modal = document.getElementById('deleteConfirmationModal');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const passwordInput = document.getElementById('confirmPasswordInput');
+    const passwordError = document.getElementById('passwordError');
+
+    if (!deleteProfileBtn) return;
+
+    // Otwórz modal
+    deleteProfileBtn.addEventListener('click', () => {
+        modal.classList.add('show');
+        passwordInput.value = '';
+        confirmDeleteBtn.disabled = true;
+        passwordError.style.display = 'none';
+    });
+
+    // Zamknij modal
+    cancelDeleteBtn.addEventListener('click', () => {
+        modal.classList.remove('show');
+    });
+
+    // Walidacja hasła w czasie rzeczywistym
+    passwordInput.addEventListener('input', function() {
+        const password = this.value.trim();
+        confirmDeleteBtn.disabled = password.length === 0;
+        passwordError.style.display = 'none';
+    });
+
+    // Potwierdź usunięcie
+    confirmDeleteBtn.addEventListener('click', async () => {
+        await deleteUserProfile();
+    });
+
+    // Zamknij modal kliknięciem w tło
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+        }
+    });
+}
+
+// ✅ DODANE - Funkcja usuwająca profil użytkownika
+async function deleteUserProfile() {
+    const passwordInput = document.getElementById('confirmPasswordInput');
+    const passwordError = document.getElementById('passwordError');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const modal = document.getElementById('deleteConfirmationModal');
+
+    const password = passwordInput.value.trim();
+    const userData = getUserDataFromStorage();
+    
+    if (!password) {
+        showFieldError('confirmPasswordInput', 'Wprowadź hasło');
+        return;
+    }
+
+    if (!userData || !userData.id) {
+        showGlobalError('Nie jesteś zalogowany!');
+        return;
+    }
+
+    try {
+        confirmDeleteBtn.disabled = true;
+        confirmDeleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Usuwanie...';
+
+        // Najpierw sprawdź hasło
+        const loginCheck = await fetch('http://localhost:8082/api/checkLogin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                login: userData.login,
+                passwd: password
+            })
+        });
+
+        const loginResult = await loginCheck.json();
+
+        if (!loginResult.valid) {
+            passwordError.textContent = 'Nieprawidłowe hasło';
+            passwordError.style.display = 'block';
+            confirmDeleteBtn.disabled = false;
+            confirmDeleteBtn.innerHTML = '<i class="fas fa-trash"></i> Tak, usuń profil';
+            return;
+        }
+
+        // Jeśli hasło poprawne - usuń profil
+        const response = await fetch(`http://localhost:8082/api/deleteUser/${userData.id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            const result = await response.text();
+            console.log('Profil usunięty:', result);
+            
+            showGlobalError('Profil został usunięty pomyślnie. Za chwilę nastąpi przekierowanie...', 'success');
+            
+            // Wyczyść localStorage i przekieruj
+            setTimeout(() => {
+                localStorage.removeItem('userData');
+                localStorage.removeItem('authToken');
+                window.location.href = 'index.html';
+            }, 2000);
+            
+        } else {
+            const errorText = await response.text();
+            throw new Error(errorText);
+        }
+
+    } catch (error) {
+        console.error('Błąd podczas usuwania profilu:', error);
+        showGlobalError('Błąd podczas usuwania profilu: ' + error.message);
+        
+        confirmDeleteBtn.disabled = false;
+        confirmDeleteBtn.innerHTML = '<i class="fas fa-trash"></i> Tak, usuń profil';
+    } finally {
+        modal.classList.remove('show');
     }
 }
 

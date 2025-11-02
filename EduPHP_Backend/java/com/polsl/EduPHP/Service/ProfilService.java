@@ -8,6 +8,7 @@ import com.polsl.EduPHP.Repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
@@ -23,6 +24,9 @@ public class ProfilService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    
     private static final long MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5 MB
     private static final int MAX_DESCRIPTION_LENGTH = 500;
 
@@ -107,7 +111,6 @@ public class ProfilService {
     }
 
     // Aktualizacja hasła
- // Aktualizacja hasła - Z DEBUGOWANIEM
     public boolean updatePasswd(Integer userId, String currentPasswd, String newPasswd) {
         try {
             System.out.println("=== DEBUG UPDATE PASSWORD ===");
@@ -120,8 +123,7 @@ public class ProfilService {
             System.out.println("Stored password hash: " + user.getPasswd());
             
             // Sprawdź czy hasło się zgadza
-            //boolean passwordMatches = BCrypt.checkpw(currentPasswd, user.getPasswd());
-            boolean passwordMatches = currentPasswd.equals(user.getPasswd());
+            boolean passwordMatches = passwordEncoder.matches(currentPasswd, user.getPasswd());
             System.out.println("Password matches: " + passwordMatches);
             
             if (!passwordMatches) {
@@ -130,8 +132,8 @@ public class ProfilService {
             }
 
             // Zakoduj nowe hasło
-            //String newPasswordHash = BCrypt.hashpw(newPasswd, BCrypt.gensalt());
-            //System.out.println("New password hash: " + newPasswordHash);
+            String newPasswordHash = passwordEncoder.encode(newPasswd);
+            System.out.println("New password hash: " + newPasswordHash);
             
             user.setPasswd(newPasswd);
             userRepository.save(user);

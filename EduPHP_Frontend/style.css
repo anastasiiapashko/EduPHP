@@ -2359,3 +2359,461 @@ footer {
 .no-data p {
   color: #888;
 }
+
+/* Styl dla strony rozwiązywania zadań */
+.task-solve-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.task-header-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.task-header h1 {
+    margin: 0;
+    color: white;
+}
+
+.task-meta {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.task-course, .task-difficulty, .task-status {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.task-course {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.task-difficulty {
+    color: white;
+}
+
+.task-difficulty-łatwy {
+    background: #2ed573;
+}
+
+.task-difficulty-średni {
+    background: #ffa502;
+}
+
+.task-difficulty-trudny {
+    background: #ff4757;
+}
+
+.task-difficulty-unknown {
+    background: #747d8c;
+}
+
+.task-status {
+    color: white;
+}
+
+.task-status-not_started {
+    background: #747d8c;
+}
+
+.task-status-in_progress {
+    background: #ffa502;
+}
+
+.task-status-completed {
+    background: #2ed573;
+}
+
+.task-requirements {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.requirement {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.requirement h3 {
+    margin: 0 0 10px 0;
+    color: var(--text-color);
+    font-size: 1em;
+}
+
+.requirement pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: var(--text-muted);
+    font-family: 'Courier New', monospace;
+    background: var(--bg-color);
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 4px solid var(--primary-color);
+}
+
+/* Edytor kodu */
+.code-editor-container {
+    margin-bottom: 20px;
+}
+
+#codeEditor {
+    width: 100%;
+    height: 300px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--code-bg);
+    color: var(--text-color);
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+#codeEditor:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.editor-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 0.8em;
+    color: var(--text-muted);
+}
+
+.solution-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Karta postępu */
+.progress-card {
+    background: var(--card-bg);
+}
+
+.progress-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.progress-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.progress-item:last-child {
+    border-bottom: none;
+}
+
+.progress-label {
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.progress-value {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* Historia rozwiązań */
+.solutions-history {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.solution-item {
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: var(--bg-color);
+}
+
+.solution-item:last-child {
+    margin-bottom: 0;
+}
+
+.solution-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.solution-date {
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+
+.solution-score {
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+}
+
+.solution-score.high {
+    background: #2ed573;
+    color: white;
+}
+
+.solution-score.medium {
+    background: #ffa502;
+    color: white;
+}
+
+.solution-score.low {
+    background: #ff4757;
+    color: white;
+}
+
+.solution-code {
+    background: var(--code-bg);
+    padding: 10px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+/* Responsywność */
+@media (max-width: 768px) {
+    .task-requirements {
+        grid-template-columns: 1fr;
+    }
+    
+    .progress-info {
+        grid-template-columns: 1fr;
+    }
+    
+    .solution-actions {
+        flex-direction: column;
+    }
+    
+    .solution-actions button {
+        width: 100%;
+    }
+}
+
+/* Motyw ciemny dla edytora kodu */
+[data-theme="dark"] #codeEditor {
+    background: #1a1a1a;
+    color: #f8f8f2;
+    border-color: #444;
+}
+
+[data-theme="dark"] .requirement pre {
+    background: #1a1a1a;
+    color: #f8f8f2;
+}
+
+[data-theme="dark"] .solution-code {
+    background: #1a1a1a;
+    color: #f8f8f2;
+}
+
+/* Strefa niebezpieczna */
+.danger-zone {
+    border: 2px solid #dc3545;
+    border-radius: 8px;
+    padding: 20px;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+}
+
+.danger-warning {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: #dc3545;
+    color: white;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.danger-warning i {
+    font-size: 20px;
+}
+
+.danger-actions {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+}
+
+.btn-danger:active {
+    transform: translateY(0);
+}
+
+.danger-description {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #dc3545;
+}
+
+.danger-description p {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #dc3545;
+}
+
+.danger-description ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.danger-description li {
+    margin-bottom: 5px;
+    color: #666;
+}
+
+/* Modal potwierdzenia */
+.confirmation-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.confirmation-modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-icon {
+    font-size: 48px;
+    color: #dc3545;
+    margin-bottom: 20px;
+}
+
+.modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #dc3545;
+}
+
+.modal-message {
+    margin-bottom: 25px;
+    line-height: 1.6;
+    color: #333;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.modal-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.modal-btn.confirm {
+    background: #dc3545;
+    color: white;
+}
+
+.modal-btn.confirm:hover {
+    background: #c82333;
+}
+
+.modal-btn.cancel {
+    background: #6c757d;
+    color: white;
+}
+
+.modal-btn.cancel:hover {
+    background: #545b62;
+}
+
+.password-confirm {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.password-confirm label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.password-confirm input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.password-confirm input:focus {
+    border-color: #dc3545;
+    outline: none;
+}

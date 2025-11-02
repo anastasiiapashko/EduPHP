@@ -30,7 +30,7 @@ public class Kurs {
 	
 	private String linkWideo;
 	
-	@OneToMany(mappedBy = "kurs", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	@OneToMany(mappedBy = "kurs", fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnore
     private Set<Task> kursTasks = new HashSet<>();
 }

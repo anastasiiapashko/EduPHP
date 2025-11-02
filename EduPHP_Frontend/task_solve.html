@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>Rozwiązywanie zadania - EduPHP</title>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <a href="user_main.html" class="logo">
+                <span class="logo-icon"><i class="fas fa-code"></i></span>
+                EduPHP
+            </a>
+            <nav class="nav-main">
+                <a href="kurs.html"><i class="fas fa-book"></i> Kursy</a>
+                <a href="creator.html" id="creatorTab" class="admin-only"><i class="fas fa-plus-circle"></i> Tworzenie</a>
+                <a href="tasks.html"><i class="fas fa-tasks"></i> Zadania</a>
+                <a href="application.html"><i class="fas fa-list-alt"></i> Zgłoszenia</a>
+                <a href="statistics.html"><i class="fas fa-chart-bar"></i> Statystyki</a>
+            </nav>
+        </div>
+        <nav class="nav-auth">
+            <a href="user_profile.html" class="profile-btn" id="profileBtn">
+                <i class="fas fa-user-circle"></i>
+                <span id="userName">Profil</span>
+            </a>
+            <button id="logoutBtn" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Wyloguj
+            </button>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <div class="task-solve-container">
+            <!-- Nagłówek zadania -->
+            <section class="card task-header-card">
+                <div class="task-header">
+                    <h1 id="taskTitle">Ładowanie zadania...</h1>
+                    <div class="task-meta">
+                        <span class="task-course" id="taskCourse"></span>
+                        <span class="task-difficulty" id="taskDifficulty"></span>
+                        <span class="task-status" id="taskStatus"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Informacje o zadaniu -->
+            <section class="card">
+                <h2><i class="fas fa-info-circle"></i> Opis zadania</h2>
+                <div class="task-description" id="taskDescription">
+                    Ładowanie opisu...
+                </div>
+                
+                <div class="task-requirements">
+                    <div class="requirement">
+                        <h3><i class="fas fa-sign-in-alt"></i> Dane wejściowe</h3>
+                        <pre id="taskInputs">Ładowanie...</pre>
+                    </div>
+                    <div class="requirement">
+                        <h3><i class="fas fa-sign-out-alt"></i> Oczekiwane wyjście</h3>
+                        <pre id="taskOutputs">Ładowanie...</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Edytor kodu -->
+            <section class="card">
+            <h2><i class="fas fa-code"></i> Edytor PHP</h2>
+            
+            <div class="compiler-container">
+                <div class="compiler-header">
+                    <div class="compiler-tabs">
+                        <button class="tab-btn active" data-tab="editor">Edytor</button>
+                        <button class="tab-btn" data-tab="output">Wynik</button>
+                    </div>
+                    <div class="compiler-actions">
+                        <button id="testCodeBtn" class="btn-secondary">
+                            <i class="fas fa-play"></i> Testuj kod
+                        </button>
+                        <button id="executeCodeBtn" class="btn-primary">
+                            <i class="fas fa-rocket"></i> Zapisz i wykonaj
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="compiler-body">
+                    <div class="editor-panel active" id="editorPanel">
+                        <textarea id="codeEditor" placeholder="<?php&#10;// Wpisz tutaj swój kod PHP&#10;// Przykład:&#10;echo 'Witaj świecie!';&#10;?>"></textarea>
+                        <div class="editor-footer">
+                            <span id="charCount">0 znaków</span>
+                            <span class="hint"><i class="fas fa-info-circle"></i> Autozapis co 30 sekund</span>
+                        </div>
+                    </div>
+                    
+                    <div class="output-panel" id="outputPanel">
+                        <pre id="compilerOutput" class="compiler-output">Wynik wykonania kodu pojawi się tutaj...</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+            <!-- Informacje o postępie -->
+            <section class="card progress-card">
+                <h2><i class="fas fa-chart-line"></i> Twój postęp</h2>
+                <div class="progress-info">
+                    <div class="progress-item">
+                        <span class="progress-label">Status:</span>
+                        <span class="progress-value" id="progressStatus">Nie rozpoczęte</span>
+                    </div>
+                    <div class="progress-item">
+                        <span class="progress-label">Liczba prób:</span>
+                        <span class="progress-value" id="progressAttempts">0</span>
+                    </div>
+                    <div class="progress-item">
+                        <span class="progress-label">Ostatnia próba:</span>
+                        <span class="progress-value" id="progressLastAttempt">-</span>
+                    </div>
+                    <div class="progress-item">
+                        <span class="progress-label">Wynik:</span>
+                        <span class="progress-value" id="progressScore">-</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Historia rozwiązań (tylko dla ukończonych zadań) -->
+            <section class="card history-card" id="historySection" style="display: none;">
+                <h2><i class="fas fa-history"></i> Historia rozwiązań</h2>
+                <div class="solutions-history" id="solutionsHistory">
+                    <!-- Historia zostanie załadowana dynamicznie -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 EduPHP - Platforma edukacyjna</p>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

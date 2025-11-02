@@ -1,4 +1,54 @@
-import { showFormError, validateRegistrationForm, showFieldError } from './utils.js';
+// auth.js - tylko funkcje pomocnicze, bez przekierowań
+import { showFormError, showFieldError, validateRegistrationForm } from './utils.js';
+
+export function checkAuth() {
+    try {
+        const userData = localStorage.getItem('userData');
+        if (!userData) return false;
+        
+        const user = JSON.parse(userData);
+        return !!(user && user.id);
+    } catch (error) {
+        console.error('Błąd podczas sprawdzania autoryzacji:', error);
+        return false;
+    }
+}
+
+export function requireAuth() {
+    if (!checkAuth()) {
+        window.location.href = 'login.html';
+        return false;
+    }
+    return true;
+}
+
+export function getCurrentUserId() {
+    try {
+        const userData = localStorage.getItem('userData');
+        if (!userData) return null;
+        
+        const user = JSON.parse(userData);
+        return user ? user.id : null;
+    } catch (error) {
+        console.error('Błąd podczas pobierania ID użytkownika:', error);
+        return null;
+    }
+}
+
+export function getCurrentUser() {
+    try {
+        const userData = localStorage.getItem('userData');
+        return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+        console.error('Błąd podczas pobierania danych użytkownika:', error);
+        return null;
+    }
+}
+
+export function logout() {
+    localStorage.removeItem('userData');
+    window.location.href = 'index.html';
+}
 
 function setupRegistrationForm() {
     try {
@@ -19,9 +69,8 @@ function setupRegistrationForm() {
                 passwd: document.getElementById('passwd').value,
             };
 
-            // ✅ PRZENIESIONY przed try - dostępny w całej funkcji
             const submitButton = registerForm.querySelector('button[type="submit"]');
-            let originalText = submitButton.textContent; // ✅ użyj let zamiast const
+            let originalText = submitButton.textContent;
 
             try {
                 submitButton.textContent = 'Rejestruję...';
@@ -36,7 +85,7 @@ function setupRegistrationForm() {
                     body: JSON.stringify(formData)
                 });
 
-                const responseData = await response.json(); // ✅ WAŻNE: parsuj odpowiedź
+                const responseData = await response.json();
 
                 if (response.ok) {
                     document.getElementById('success').innerText = 'Rejestracja udana! Za chwilę zostaniesz przekierowany...';
@@ -46,7 +95,6 @@ function setupRegistrationForm() {
                         window.location.href = 'login.html';
                     }, 2000);
                 } else {
-                    // ✅ Poprawna obsługa błędów z backendu
                     const errorMessage = responseData.message || `Błąd serwera: ${response.status}`;
                     throw new Error(errorMessage);
                 }
@@ -82,9 +130,8 @@ function setupLoginForm() {
             }
             if (successDiv) successDiv.textContent = '';
 
-            // ✅ PRZENIESIONY przed try - dostępny w całej funkcji
             const submitButton = loginForm.querySelector('button[type="submit"]');
-            let originalText = submitButton.textContent; // ✅ użyj let zamiast const
+            let originalText = submitButton.textContent;
 
             try {
                 submitButton.textContent = 'Logowanie...';
@@ -109,6 +156,8 @@ function setupLoginForm() {
                 console.log('Status:', response.status);
                 
                 if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Błąd odpowiedzi:', errorText);
                     throw new Error(`Błąd serwera: ${response.status}`);
                 }
 
@@ -140,7 +189,7 @@ function setupLoginForm() {
             } catch (error) {
                 console.error('Błąd podczas logowania:', error);
                 if (errorDiv) {
-                    errorDiv.textContent = error.message;
+                    errorDiv.textContent = error.message || 'Błąd połączenia z serwerem';
                     errorDiv.className = 'error show';
                     setTimeout(() => {
                         errorDiv.className = 'error';
@@ -158,44 +207,4 @@ function setupLoginForm() {
     }
 }
 
-function checkAuth() {
-    try {
-        const userData = localStorage.getItem('userData');
-        if (!userData) return false;
-        
-        const user = JSON.parse(userData);
-        return !!(user && user.id); // Zwraca true jeśli użytkownik ma ID
-    } catch (error) {
-        console.error('Błąd podczas sprawdzania autoryzacji:', error);
-        return false;
-    }
-} 
-
-function getCurrentUserId() {
-    try {
-        const userData = localStorage.getItem('userData');
-        if (!userData) return null;
-        
-        const user = JSON.parse(userData);
-        return user ? user.id : null;
-    } catch (error) {
-        console.error('Błąd podczas pobierania ID użytkownika:', error);
-        return null;
-    }
-}
-
- function getCurrentUser() {
-    try {
-        const userData = localStorage.getItem('userData');
-        return userData ? JSON.parse(userData) : null;
-    } catch (error) {
-        console.error('Błąd podczas pobierania danych użytkownika:', error);
-        return null;
-    }
-}
-
-function logout(){
-    localStorage.removeItem('userData');
-            window.location.href = 'index.html';
-}
-export {logout, setupRegistrationForm, setupLoginForm, getCurrentUser, getCurrentUserId, checkAuth };
+export { setupRegistrationForm, setupLoginForm };

@@ -14,12 +14,6 @@ export function setupApplicationForm() {
     
     console.log('Inicjalizacja formularza zgłoszeń...');
 
-    if (!checkAuth()) {
-        console.log('Użytkownik nie zalogowany - przekierowanie do logowania');
-        window.location.href = 'login.html';
-        return;
-    }
-
     // Sprawdź czy jesteśmy w trybie edycji
     checkEditMode();
     
