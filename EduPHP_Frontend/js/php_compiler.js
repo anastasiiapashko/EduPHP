@@ -1,171 +1,253 @@
+// js/php_compiler.js
+import { showGlobalError } from './utils.js';
+import { getCurrentUserId } from './auth.js';
+
 class PHPCompiler {
-    constructor() {
-        this.currentUserId = null;
-        this.currentTaskId = null;
-        this.isTesting = false;
-        this.init();
-    }
-
-    init() {
-        this.bindEvents();
-        this.loadUserData();
-    }
-
-    bindEvents() {
-        // Przycisk testowania kodu
-        document.getElementById('testCodeBtn')?.addEventListener('click', () => this.testCode());
+    constructor(taskId, userId) {
+        this.taskId = taskId;
+        this.userId = userId;
+        this.currentCode = '';
         
-        // Przycisk zapisu i wykonania
-        document.getElementById('executeCodeBtn')?.addEventListener('click', () => this.executeCode());
-        
-        // Autosave co 30 sekund
-        setInterval(() => this.autoSave(), 30000);
+        this.initializeCompiler();
     }
-
-    async testCode() {
-        const code = this.getCode();
-        if (!code.trim()) {
-            this.showOutput('error', 'Proszę wpisać kod PHP do testowania');
-            return;
-        }
-
-        this.isTesting = true;
-        this.showOutput('info', '🔧 Testowanie kodu...');
-
-        try {
-            const response = await fetch(`/api/php/test/${this.currentUserId}/${this.currentTaskId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: code })
+    
+    initializeCompiler() {
+        this.setupEventListeners();
+        this.loadLastSolution();
+    }
+    
+    setupEventListeners() {
+        const editor = document.getElementById('codeEditor');
+        const testBtn = document.getElementById('testCodeBtn');
+        const executeBtn = document.getElementById('executeCodeBtn');
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        
+        if (editor) {
+            editor.addEventListener('input', () => {
+                this.currentCode = editor.value;
+                this.updateCharCount();
             });
-
-            const result = await response.json();
-            this.displayTestResult(result);
-
-        } catch (error) {
-            this.showOutput('error', `Błąd sieci: ${error.message}`);
-        } finally {
-            this.isTesting = false;
-        }
-    }
-
-    async executeCode() {
-        const code = this.getCode();
-        if (!code.trim()) {
-            this.showOutput('error', 'Kod nie może być pusty');
-            return;
-        }
-
-        this.showOutput('info', '🚀 Wykonywanie kodu...');
-
-        try {
-            const response = await fetch(`/api/php/execute/${this.currentUserId}/${this.currentTaskId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: code })
+            
+            editor.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    this.insertTab(editor);
+                }
             });
-
-            const result = await response.json();
-            this.displayExecutionResult(result);
-
-        } catch (error) {
-            this.showOutput('error', `Błąd wykonania: ${error.message}`);
         }
-    }
-
-    displayTestResult(result) {
-        const outputElement = document.getElementById('compilerOutput');
         
-        if (result.success) {
-            if (result.output) {
-                this.showOutput('success', `✅ Wynik:\n${result.output}`);
-            } else {
-                this.showOutput('success', '✅ Kod wykonany pomyślnie (brak outputu)');
+        if (testBtn) {
+            testBtn.addEventListener('click', () => this.testCode());
+        }
+        
+        if (executeBtn) {
+            executeBtn.addEventListener('click', () => this.executeAndSaveCode());
+        }
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
+        });
+    }
+    
+    async loadLastSolution() {
+        try {
+            const response = await fetch(`http://localhost:8082/api/php/solution/${this.userId}/${this.taskId}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.code) {
+                    this.currentCode = data.code;
+                    this.setEditorContent(data.code);
+                    console.log('✅ Załadowano ostatnie rozwiązanie');
+                }
             }
-        } else {
-            let errorMessage = '❌ Błąd wykonania:\n';
-            if (result.errors) errorMessage += result.errors;
-            if (result.output) errorMessage += `\nOutput: ${result.output}`;
-            
-            this.showOutput('error', errorMessage);
+        } catch (error) {
+            console.error('Błąd ładowania rozwiązania:', error);
         }
     }
-
-    displayExecutionResult(result) {
-        if (result.success) {
-            this.showOutput('success', 
-                `✅ Rozwiązanie zapisane i wykonane pomyślnie!\n\nWynik:\n${result.output}`);
-            
-            // Możesz dodać automatyczne oznaczenie zadania jako ukończone
-            this.markTaskAsCompleted();
-        } else {
-            this.showOutput('error', 
-                `❌ Błąd:\n${result.errors || 'Nieznany błąd'}`);
+    
+    setEditorContent(code) {
+        const editor = document.getElementById('codeEditor');
+        if (editor) {
+            editor.value = code;
+            this.updateCharCount();
         }
     }
-
-    showOutput(type, message) {
-        const outputElement = document.getElementById('compilerOutput');
-        outputElement.textContent = message;
-        outputElement.className = `compiler-output ${type}`;
-        outputElement.style.display = 'block';
+    
+    updateCharCount() {
+        const editor = document.getElementById('codeEditor');
+        const charCount = document.getElementById('charCount');
+        if (editor && charCount) {
+            const count = editor.value.length;
+            charCount.textContent = `${count} znaków`;
+            charCount.className = count > 0 ? 'has-content' : '';
+        }
+    }
+    
+    insertTab(editor) {
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
         
-        // Auto-scroll do outputu
-        outputElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        editor.value = editor.value.substring(0, start) + '    ' + editor.value.substring(end);
+        editor.selectionStart = editor.selectionEnd = start + 4;
     }
-
-    getCode() {
-        return document.getElementById('codeEditor').value;
-    }
-
-    setCode(code) {
-        document.getElementById('codeEditor').value = code || '';
-    }
-
-    async autoSave() {
-        if (this.isTesting) return;
+    
+    switchTab(tabName) {
+        const tabs = document.querySelectorAll('.tab-btn');
+        const panels = document.querySelectorAll('.editor-panel, .output-panel');
         
-        const code = this.getCode();
-        if (!code.trim()) return;
-
+        tabs.forEach(tab => tab.classList.remove('active'));
+        panels.forEach(panel => panel.classList.remove('active'));
+        
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        document.getElementById(tabName + 'Panel').classList.add('active');
+    }
+    
+    getCurrentCode() {
+        const editor = document.getElementById('codeEditor');
+        return editor ? editor.value : '';
+    }
+    
+    async testCode() {
+        const code = this.getCurrentCode();
+        if (!code.trim()) {
+            showGlobalError('❌ Wpisz kod PHP do przetestowania', 'error');
+            return;
+        }
+        
+        showGlobalError('🔄 Testowanie kodu...', 'info');
+        
         try {
-            await fetch(`/api/user-task/${this.currentUserId}/task/${this.currentTaskId}/solution`, {
-                method: 'PUT',
+            const response = await fetch(`http://localhost:8082/api/php/test/${this.userId}/${this.taskId}`, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ solution: code })
+                body: JSON.stringify({ code: code })
             });
             
-            console.log('Autosave completed');
+            const result = await response.json();
+            this.displayExecutionResult(result, 'test');
+            
+            if (result.success) {
+                showGlobalError('✅ Test zakończony pomyślnie', 'success');
+            } else {
+                showGlobalError('⚠️ Test zakończony z błędami', 'warning');
+            }
+            
         } catch (error) {
-            console.warn('Autosave failed:', error);
+            console.error('Błąd testowania kodu:', error);
+            showGlobalError('❌ Błąd podczas testowania kodu', 'error');
         }
     }
+    
+    async executeAndSaveCode() {
+    const code = this.getCurrentCode();
+    if (!code.trim()) {
+        showGlobalError('❌ Wpisz kod PHP do wykonania', 'error');
+        return;
+    }
 
-    loadUserData() {
-        // Pobierz dane użytkownika i zadania z istniejącego systemu
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        if (userData) {
-            this.currentUserId = userData.userId;
-            document.getElementById('userName').textContent = userData.firstName;
+    showGlobalError('💾 Zapisuję i wykonuję kod...', 'info');
+    
+    try {
+        // Najpierw upewnij się, że zadanie jest rozpoczęte
+        await this.ensureTaskStarted();
+        
+        const response = await fetch(`http://localhost:8082/api/php/execute/${this.userId}/${this.taskId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code })
+        });
+        
+        const result = await response.json();
+        this.displayExecutionResult(result, 'execute');
+        
+        if (result.success && result.saved) {
+            showGlobalError('✅ Kod wykonany i zapisany pomyślnie!', 'success');
+        } else if (result.success) {
+            showGlobalError('✅ Kod wykonany pomyślnie!', 'success');
+        } else {
+            showGlobalError('⚠️ Kod wykonany z błędami', 'warning');
         }
         
-        // Pobierz taskId z URL lub parametrów
-        const urlParams = new URLSearchParams(window.location.search);
-        this.currentTaskId = urlParams.get('taskId') || 
-                            document.getElementById('taskId')?.value;
-    }
-
-    markTaskAsCompleted() {
-        // Oznacz zadanie jako ukończone w systemie
-        fetch(`/api/user-task/${this.currentUserId}/task/${this.currentTaskId}/complete`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ score: 100 }) // lub inna logika punktacji
-        }).catch(console.error);
+    } catch (error) {
+        console.error('Błąd wykonania kodu:', error);
+        showGlobalError('❌ Błąd podczas wykonywania kodu', 'error');
     }
 }
 
-// Inicjalizacja kompilatora gdy strona się załaduje
-document.addEventListener('DOMContentLoaded', () => {
-    window.phpCompiler = new PHPCompiler();
-});
+async ensureTaskStarted() {
+    try {
+        // Sprawdź status zadania
+        const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}`);
+        if (!response.ok) {
+            // Jeśli zadanie nie istnieje, rozpocznij je
+            await fetch(`http://localhost:8082/api/user-task/${this.userId}/start/${this.taskId}`, {
+                method: 'POST'
+            });
+        }
+    } catch (error) {
+        console.error('Błąd podczas rozpoczynania zadania:', error);
+    }
+}
+    
+    displayExecutionResult(result, actionType = 'test') {
+        const outputElement = document.getElementById('compilerOutput');
+        
+        if (!outputElement) return;
+        
+        let outputHTML = '';
+        
+        // Nagłówek w zależności od akcji
+        if (actionType === 'execute') {
+            outputHTML += `<div class="output-header-action">💾 ZAPIS I WYKONANIE</div>`;
+        } else {
+            outputHTML += `<div class="output-header-action">🧪 TEST KODU</div>`;
+        }
+        
+        if (result.success) {
+            outputHTML += `<div class="output-success">✅ WYKONANIE POWIODŁO SIĘ</div>`;
+        } else {
+            outputHTML += `<div class="output-error">❌ WYKONANIE NIE POWIODŁO SIĘ</div>`;
+        }
+        
+        // Informacja o zapisie
+        if (actionType === 'execute' && result.saved) {
+            outputHTML += `<div class="output-info">
+                <i class="fas fa-save"></i> Kod został zapisany w bazie danych
+            </div>`;
+        }
+        
+        if (result.output) {
+            outputHTML += `<div class="output-section">
+                <div class="output-header">Wynik:</div>
+                <pre class="output-content">${this.escapeHtml(result.output)}</pre>
+            </div>`;
+        }
+        
+        if (result.errors) {
+            outputHTML += `<div class="output-section">
+                <div class="output-header">Błędy:</div>
+                <pre class="output-content error">${this.escapeHtml(result.errors)}</pre>
+            </div>`;
+        }
+        
+        outputHTML += `<div class="output-timestamp">
+            Wykonano: ${new Date().toLocaleString('pl-PL')}
+        </div>`;
+        
+        outputElement.innerHTML = outputHTML;
+        this.switchTab('output');
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    
+    destroy() {
+        console.log('🧹 PHPCompiler zniszczony');
+    }
+}
+
+export { PHPCompiler };

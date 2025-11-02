@@ -1,5 +1,7 @@
-import {  showGlobalError } from './utils.js';
-import { getCurrentUserId, checkAuth } from './auth.js';
+// js/task_solve.js
+import { showGlobalError } from './utils.js';
+import { getCurrentUserId, checkAuth, requireAuth } from './auth.js';
+import { PHPCompiler } from './php_compiler.js';
 
 class TaskSolver {
     constructor() {
@@ -7,19 +9,20 @@ class TaskSolver {
         this.userId = getCurrentUserId();
         this.taskData = null;
         this.userTaskData = null;
+        this.phpCompiler = null;
         
         this.init();
     }
 
     async init() {
-        
         if (!this.taskId || !this.userId) {
-            //this.showError('Błąd: Brak ID zadania lub użytkownika');
+            showGlobalError('Błąd: Brak ID zadania lub użytkownika', 'error');
             return;
         }
 
         await this.loadTaskData();
         await this.loadUserTaskData();
+        this.initializePHPCompiler();
         this.setupEventListeners();
         this.updateUI();
     }
@@ -31,9 +34,7 @@ class TaskSolver {
 
     async loadTaskData() {
         try {
-            const response = await fetch(`http://localhost:8082/api/task/dto/${this.taskId}`, {
-                credentials: 'include'
-            });
+            const response = await fetch(`http://localhost:8082/api/task/dto/${this.taskId}`);
             
             if (response.ok) {
                 this.taskData = await response.json();
@@ -43,39 +44,44 @@ class TaskSolver {
             }
         } catch (error) {
             console.error('Błąd podczas ładowania zadania:', error);
-            this.showError('Nie udało się załadować zadania');
+            showGlobalError('Nie udało się załadować zadania', 'error');
         }
     }
 
     async loadUserTaskData() {
-    try {
-        console.log(`Ładowanie danych zadania użytkownika: userId=${this.userId}, taskId=${this.taskId}`);
-        
-        const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}`, {
-            credentials: 'include'
-        });
-        
-        console.log('Status:', response.status);
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log('Otrzymane dane user-task (DTO):', data);
+        try {
+            console.log(`Ładowanie danych zadania użytkownika: userId=${this.userId}, taskId=${this.taskId}`);
             
-            // Mapuj dane z DTO na nasz obiekt
-            this.userTaskData = {
-                status: data.status || 'NOT_STARTED',
-                attempts: data.attempts || 0,
-                userSolution: data.userSolution || '',
-                score: data.score || 0,
-                startDate: data.startDate,
-                completionDate: data.completionDate,
-                userId: data.userId,
-                taskId: data.taskId
-            };
+            const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}`);
             
-        } else {
-            // Jeśli błąd - używamy domyślnych danych
-            console.warn('Błąd serwera, używam domyślnych danych');
+            console.log('Status:', response.status);
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Otrzymane dane user-task (DTO):', data);
+                
+                this.userTaskData = {
+                    status: data.status || 'NOT_STARTED',
+                    attempts: data.attempts || 0,
+                    userSolution: data.userSolution || '',
+                    score: data.score || 0,
+                    startDate: data.startDate,
+                    completionDate: data.completionDate,
+                    userId: data.userId,
+                    taskId: data.taskId
+                };
+                
+            } else {
+                console.warn('Błąd serwera, używam domyślnych danych');
+                this.userTaskData = {
+                    status: 'NOT_STARTED',
+                    attempts: 0,
+                    userSolution: '',
+                    score: 0
+                };
+            }
+        } catch (error) {
+            console.error('Błąd podczas ładowania postępu:', error);
             this.userTaskData = {
                 status: 'NOT_STARTED',
                 attempts: 0,
@@ -83,16 +89,7 @@ class TaskSolver {
                 score: 0
             };
         }
-    } catch (error) {
-        console.error('Błąd podczas ładowania postępu:', error);
-        this.userTaskData = {
-            status: 'NOT_STARTED',
-            attempts: 0,
-            userSolution: '',
-            score: 0
-        };
     }
-}
 
     displayTaskData() {
         if (!this.taskData) return;
@@ -107,36 +104,30 @@ class TaskSolver {
         difficultyElement.textContent = this.taskData.difficulty || 'Nieokreślony';
         difficultyElement.className = `task-difficulty task-difficulty-${this.taskData.difficulty || 'unknown'}`;
         
-        // Nazwa kursu (możesz dodać pobieranie nazwy kursu jeśli potrzebne)
+        // Nazwa kursu
         document.getElementById('taskCourse').textContent = `Kurs #${this.taskData.kursId}`;
     }
 
+    initializePHPCompiler() {
+        // Inicjalizuj kompilator PHP
+        this.phpCompiler = new PHPCompiler(this.taskId, this.userId);
+    }
+
     setupEventListeners() {
-        // Zapisz rozwiązanie
-        document.getElementById('saveSolutionBtn').addEventListener('click', () => {
-            this.saveSolution();
-        });
-
-        // Prześlij do oceny
-        document.getElementById('submitSolutionBtn').addEventListener('click', () => {
-            this.submitSolution();
-        });
-
         // Resetuj rozwiązanie
-        document.getElementById('resetSolutionBtn').addEventListener('click', () => {
-            this.resetSolution();
-        });
+        const resetBtn = document.getElementById('resetSolutionBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                this.resetSolution();
+            });
+        }
 
-        // Licznik znaków w edytorze
-        const codeEditor = document.getElementById('codeEditor');
-        codeEditor.addEventListener('input', () => {
-            document.getElementById('charCount').textContent = `${codeEditor.value.length} znaków`;
-        });
-
-        // Wypełnij edytor jeśli mamy zapisane rozwiązanie
-        if (this.userTaskData.userSolution) {
-            codeEditor.value = this.userTaskData.userSolution;
-            document.getElementById('charCount').textContent = `${codeEditor.value.length} znaków`;
+        // Prześlij do oceny (jeśli masz taki przycisk)
+        const submitBtn = document.getElementById('submitSolutionBtn');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', () => {
+                this.submitSolution();
+            });
         }
     }
 
@@ -161,8 +152,9 @@ class TaskSolver {
             : '-';
 
         // Pokazuj/ukryj historię dla ukończonych zadań
-        if (this.userTaskData.status === 'COMPLETED') {
-            document.getElementById('historySection').style.display = 'block';
+        const historySection = document.getElementById('historySection');
+        if (historySection) {
+            historySection.style.display = this.userTaskData.status === 'COMPLETED' ? 'block' : 'none';
         }
 
         // Aktualizuj przyciski w zależności od statusu
@@ -182,79 +174,17 @@ class TaskSolver {
         const isCompleted = this.userTaskData.status === 'COMPLETED';
         const submitBtn = document.getElementById('submitSolutionBtn');
         
-        if (isCompleted) {
+        if (submitBtn && isCompleted) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-check"></i> Zadanie ukończone';
             submitBtn.title = 'To zadanie zostało już ukończone';
         }
     }
 
-    async saveSolution() {
-        const solution = document.getElementById('codeEditor').value.trim();
-        
-        if (!solution) {
-            this.showError('Wprowadź rozwiązanie przed zapisaniem');
-            return;
-        }
-
-        try {
-            // Jeśli zadanie nie zostało jeszcze rozpoczęte, najpierw je rozpocznij
-            if (this.userTaskData.status === 'NOT_STARTED') {
-                await this.startTask();
-            }
-
-            const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/solution`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({ solution: solution })
-            });
-
-            if (response.ok) {
-                showGlobalError('Rozwiązanie zapisane pomyślnie!', 'success');
-                await this.loadUserTaskData(); // Odśwież dane
-                this.updateUI();
-            } else {
-                throw new Error('Błąd podczas zapisywania rozwiązania');
-            }
-        } catch (error) {
-            console.error('Błąd podczas zapisywania rozwiązania:', error);
-            this.showError('Nie udało się zapisać rozwiązania');
-        }
-    }
-
-    async startTask() {
-        try {
-            const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/start/${this.taskId}`, {
-                method: 'POST',
-                credentials: 'include'
-            });
-
-            if (response.ok) {
-                console.log('Zadanie rozpoczęte pomyślnie');
-                return true;
-            } else {
-                throw new Error('Błąd podczas rozpoczynania zadania');
-            }
-        } catch (error) {
-            console.error('Błąd podczas rozpoczynania zadania:', error);
-            throw error;
-        }
-    }
-
     async submitSolution() {
-        const solution = document.getElementById('codeEditor').value.trim();
-        
-        if (!solution) {
-            this.showError('Wprowadź rozwiązanie przed przesłaniem');
-            return;
-        }
-
         // Tutaj możesz dodać logikę oceniania rozwiązania
         // Na razie symulujemy ocenę
-        const score = this.evaluateSolution(solution);
+        const score = this.evaluateSolution(this.phpCompiler.getCurrentCode());
 
         try {
             const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/complete`, {
@@ -262,12 +192,11 @@ class TaskSolver {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include',
                 body: JSON.stringify({ score: score })
             });
 
             if (response.ok) {
-                showGlobalError(`Zadanie ukończone! Wynik: ${score}/100`, 'success');
+                showGlobalError(`✅ Zadanie ukończone! Wynik: ${score}/100`, 'success');
                 await this.loadUserTaskData();
                 this.updateUI();
             } else {
@@ -275,21 +204,19 @@ class TaskSolver {
             }
         } catch (error) {
             console.error('Błąd podczas przesyłania rozwiązania:', error);
-            this.showError('Nie udało się przesłać rozwiązania');
+            showGlobalError('❌ Nie udało się przesłać rozwiązania', 'error');
         }
     }
 
     evaluateSolution(solution) {
-        // Prosta symulacja oceniania - w rzeczywistości tutaj byłby system oceniania kodu
-        // Na razie zwracamy losowy wynik lub wynik na podstawie długości kodu
+        // Prosta symulacja oceniania - w przyszłości możesz dodać prawdziwy system oceniania
         const baseScore = Math.min(100, Math.max(20, solution.length / 10));
         return Math.round(baseScore);
     }
 
     resetSolution() {
         if (confirm('Czy na pewno chcesz zresetować swoje rozwiązanie? To usunie twój obecny kod.')) {
-            document.getElementById('codeEditor').value = '';
-            document.getElementById('charCount').textContent = '0 znaków';
+            this.phpCompiler.setEditorContent('');
             
             // Jeśli chcesz zresetować również status zadania:
             // this.resetTaskProgress();
@@ -299,12 +226,11 @@ class TaskSolver {
     async resetTaskProgress() {
         try {
             const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/reset`, {
-                method: 'PUT',
-                credentials: 'include'
+                method: 'PUT'
             });
 
             if (response.ok) {
-                showGlobalError('Postęp zadania zresetowany', 'success');
+                showGlobalError('🔄 Postęp zadania zresetowany', 'success');
                 await this.loadUserTaskData();
                 this.updateUI();
             }
@@ -313,16 +239,24 @@ class TaskSolver {
         }
     }
 
-    showError(message) {
-        showGlobalError(message);
+    destroy() {
+        if (this.phpCompiler) {
+            this.phpCompiler.destroy();
+        }
     }
 }
 
 // Inicjalizacja gdy strona się załaduje
 document.addEventListener('DOMContentLoaded', () => {
-    new TaskSolver();
+    window.taskSolver = new TaskSolver();
 });
 
+// Czyszczenie przy opuszczeniu strony
+window.addEventListener('beforeunload', () => {
+    if (window.taskSolver) {
+        window.taskSolver.destroy();
+    }
+});
 
 export function setupTaskSolvePage() {
     if (!document.querySelector('.task-solve-container')) {
