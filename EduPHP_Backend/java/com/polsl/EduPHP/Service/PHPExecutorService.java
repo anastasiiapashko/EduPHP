@@ -84,7 +84,8 @@ public class PHPExecutorService {
         // Szukaj pliku task_X.php (bez timestampu)
         Path solutionFile = userDir.resolve("task_" + taskId + ".php");
         if (Files.exists(solutionFile)) {
-            return Files.readString(solutionFile);
+           String content = Files.readString(solutionFile);
+            return extractUserCode(content);
         }
         
         // Fallback: szukaj starych plików z timestampem (dla kompatybilności)
@@ -102,19 +103,51 @@ public class PHPExecutorService {
             if (latestFile != null) {
                 // Przenieś stary plik do nowej nazwy (bez timestampu)
                 String content = Files.readString(latestFile);
+                String userCode = extractUserCode(content);
                 Path newFile = userDir.resolve("task_" + taskId + ".php");
-                Files.writeString(newFile, content, 
+                Files.writeString(newFile, addPHPSecurityWrappers(userCode), 
                     StandardOpenOption.CREATE, 
                     StandardOpenOption.TRUNCATE_EXISTING);
                 
                 // Usuń stary plik
                 Files.deleteIfExists(latestFile);
                 
-                return content;
+                return userCode;
             }
         }
         
         return "<?php\n// Napisz swoje rozwiązanie tutaj\n?>";
+    }
+    
+   // NOWA METODA - wyciąga tylko kod użytkownika z wrapperów
+    private String extractUserCode(String wrappedCode) {
+        if (wrappedCode == null || wrappedCode.trim().isEmpty()) {
+            return "<?php\n// Napisz swoje rozwiązanie tutaj\n?>";
+        }
+        
+        // Szukamy bloku try { ... } catch
+        String tryBlockStart = "try {";
+        String tryBlockEnd = "} catch (Throwable $e) {";
+        
+        int tryStart = wrappedCode.indexOf(tryBlockStart);
+        int tryEnd = wrappedCode.indexOf(tryBlockEnd);
+        
+        if (tryStart != -1 && tryEnd != -1) {
+            // Wyciągamy kod z bloku try
+            int userCodeStart = tryStart + tryBlockStart.length();
+            String userCode = wrappedCode.substring(userCodeStart, tryEnd).trim();
+            
+            // Jeśli użytkownik miał własne tagi PHP, zachowujemy je
+            if (userCode.startsWith("<?php")) {
+                return userCode;
+            } else {
+                // Dodajemy tagi PHP jeśli ich nie ma
+                return "<?php\n" + userCode + "\n?>";
+            }
+        }
+        
+        // Fallback: jeśli nie znaleziono wrapperów, zwróć oryginalny kod
+        return wrappedCode;
     }
     
     private Path prepareTempDirectory() throws IOException {
