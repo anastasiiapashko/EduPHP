@@ -546,7 +546,6 @@ footer {
   }
 }
 
-/* style.css - Dodatkowe style dla panelu użytkownika */
 
 /* Przyciski specyficzne dla zalogowanego użytkownika */
 .profile-btn {
@@ -2816,4 +2815,78 @@ footer {
 .password-confirm input:focus {
     border-color: #dc3545;
     outline: none;
+}
+
+/* Czysty panel wyników - minimalistyczny */
+.output-panel {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0;
+    min-height: 200px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.compiler-output {
+    margin: 0;
+    padding: 0.5rem 1.5rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-color);
+    background: transparent;
+    border: none;
+    min-height: 150px;
+}
+
+/* Styl dla błędów - subtelne wyróżnienie */
+.compiler-output.has-errors {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.02);
+}
+
+/* Styl dla sukcesu - neutralny */
+.compiler-output.has-success {
+    color: var(--text-color);
+}
+
+/* Puste wyniki */
+.compiler-output:empty::before {
+    content: "Wynik wykonania kodu pojawi się tutaj...";
+    color: #666;
+    font-style: italic;
+}
+
+/* Pasek przewijania - stylizowany */
+.compiler-output::-webkit-scrollbar {
+    width: 8px;
+}
+
+.compiler-output::-webkit-scrollbar-track {
+    background: var(--bg-color);
+    border-radius: 4px;
+}
+
+.compiler-output::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+.compiler-output::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* Responsywność */
+@media (max-width: 768px) {
+    .output-panel {
+        max-height: 400px;
+    }
+    
+    .compiler-output {
+        padding: 0.25rem 1.5rem;
+        font-size: 13px;
+    }
 }

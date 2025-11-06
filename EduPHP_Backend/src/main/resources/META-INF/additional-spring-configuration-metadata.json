@@ -1,0 +1,24 @@
+{
+  "properties": [
+    {
+      "name": "app.datasource.sandbox.url",
+      "type": "java.lang.String",
+      "description": "URL for PHP sandbox database"
+    },
+    {
+      "name": "app.datasource.sandbox.username",
+      "type": "java.lang.String",
+      "description": "Username for PHP sandbox database"
+    },
+    {
+      "name": "app.datasource.sandbox.password",
+      "type": "java.lang.String",
+      "description": "Password for PHP sandbox database"
+    },
+    {
+      "name": "app.datasource.sandbox.driver-class-name",
+      "type": "java.lang.String",
+      "description": "Driver class name for PHP sandbox database"
+    }
+  ]
+}

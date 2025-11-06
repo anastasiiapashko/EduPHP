@@ -17,7 +17,7 @@ function disable_functions() {
 disable_functions();
 
 try {
-echo "Hello, My friends, lalalalala!";
+echo "Hello, World!";
 } catch (Throwable $e) {
     echo 'RUNTIME_ERROR: ' . $e->getMessage() . "\n";
 }

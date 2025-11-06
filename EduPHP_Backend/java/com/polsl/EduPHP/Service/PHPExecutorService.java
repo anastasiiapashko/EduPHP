@@ -211,10 +211,21 @@ public class PHPExecutorService {
                "}\n" +
                "disable_functions();\n" +
                "\n" +
+               "// POŁĄCZENIE Z BAZĄ DANYCH\n" +
+               "$conn = new mysqli(\"localhost\", \"php_sandbox_user\", \"sandbox_password123\", \"eduphp_sandbox\");\n" +
+               "if ($conn->connect_error) {\n" +
+               "    die(\"Błąd połączenia z bazą: \" . $conn->connect_error);\n" +
+               "}\n" +
+               "\n" +
                "try {\n" +
                cleanCode + "\n" +
                "} catch (Throwable $e) {\n" +
                "    echo 'RUNTIME_ERROR: ' . $e->getMessage() . \"\\n\";\n" +
+               "} finally {\n" +
+               "    // ZAMKNIĘCIE POŁĄCZENIA Z BAZĄ\n" +
+               "    if (isset($conn)) {\n" +
+               "        $conn->close();\n" +
+               "    }\n" +
                "}\n" +
                "?>";
     }

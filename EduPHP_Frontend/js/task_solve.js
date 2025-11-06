@@ -16,7 +16,7 @@ class TaskSolver {
 
     async init() {
         if (!this.taskId || !this.userId) {
-            showGlobalError('Błąd: Brak ID zadania lub użytkownika', 'error');
+            //showGlobalError('Błąd: Brak ID zadania lub użytkownika', 'error');
             return;
         }
 

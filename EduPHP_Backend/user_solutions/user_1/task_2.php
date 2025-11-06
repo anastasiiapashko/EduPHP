@@ -16,9 +16,29 @@ function disable_functions() {
 }
 disable_functions();
 
+// POŁĄCZENIE Z BAZĄ DANYCH
+$conn = new mysqli("localhost", "php_sandbox_user", "sandbox_password123", "eduphp_sandbox");
+if ($conn->connect_error) {
+    die("Błąd połączenia z bazą: " . $conn->connect_error);
+}
+
 try {
-echo "Hello, My friends, lalalalala!";
+// Alias - ale nadal używa $conn
+function get_mysqli() {
+    global $conn;
+    return $conn;
+}
+
+$result = get_mysqli()->query("SELECT * FROM customers");
+while($row = $result->fetch_assoc()) {
+    echo $row['name'] . "\n";
+}
 } catch (Throwable $e) {
     echo 'RUNTIME_ERROR: ' . $e->getMessage() . "\n";
+} finally {
+    // ZAMKNIĘCIE POŁĄCZENIA Z BAZĄ
+    if (isset($conn)) {
+        $conn->close();
+    }
 }
 ?>

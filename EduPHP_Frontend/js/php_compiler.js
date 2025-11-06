@@ -114,8 +114,6 @@ class PHPCompiler {
             return;
         }
         
-        showGlobalError('🔄 Testowanie kodu...', 'info');
-        
         try {
             const response = await fetch(`http://localhost:8082/api/php/test/${this.userId}/${this.taskId}`, {
                 method: 'POST',
@@ -144,8 +142,6 @@ class PHPCompiler {
         showGlobalError('❌ Wpisz kod PHP do wykonania', 'error');
         return;
     }
-
-    showGlobalError('💾 Zapisuję i wykonuję kod...', 'info');
     
     try {
         // Najpierw upewnij się, że zadanie jest rozpoczęte
@@ -195,27 +191,7 @@ async ensureTaskStarted() {
         if (!outputElement) return;
         
         let outputHTML = '';
-        
-        // Nagłówek w zależności od akcji
-        if (actionType === 'execute') {
-            outputHTML += `<div class="output-header-action">💾 ZAPIS I WYKONANIE</div>`;
-        } else {
-            outputHTML += `<div class="output-header-action">🧪 TEST KODU</div>`;
-        }
-        
-        if (result.success) {
-            outputHTML += `<div class="output-success">✅ WYKONANIE POWIODŁO SIĘ</div>`;
-        } else {
-            outputHTML += `<div class="output-error">❌ WYKONANIE NIE POWIODŁO SIĘ</div>`;
-        }
-        
-        // Informacja o zapisie
-        if (actionType === 'execute' && result.saved) {
-            outputHTML += `<div class="output-info">
-                <i class="fas fa-save"></i> Kod został zapisany w bazie danych
-            </div>`;
-        }
-        
+     
         if (result.output) {
             outputHTML += `<div class="output-section">
                 <div class="output-header">Wynik:</div>
@@ -229,10 +205,6 @@ async ensureTaskStarted() {
                 <pre class="output-content error">${this.escapeHtml(result.errors)}</pre>
             </div>`;
         }
-        
-        outputHTML += `<div class="output-timestamp">
-            Wykonano: ${new Date().toLocaleString('pl-PL')}
-        </div>`;
         
         outputElement.innerHTML = outputHTML;
         this.switchTab('output');
