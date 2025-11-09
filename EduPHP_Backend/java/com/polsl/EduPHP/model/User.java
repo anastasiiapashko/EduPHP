@@ -48,7 +48,7 @@ public class User {
     
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnore
-    private Set<UserCompain> userApplication = new HashSet<>();
+    private Set<UserComplain> userApplication = new HashSet<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @JsonIgnore

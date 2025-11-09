@@ -12,8 +12,8 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "UserCompain")
-public class UserCompain {
+@Table(name = "UserComplain")
+public class UserComplain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

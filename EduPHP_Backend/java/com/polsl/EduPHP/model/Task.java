@@ -26,6 +26,9 @@ public class Task {
     private String outputs;
     private String difficulty;
     
+    @Column(columnDefinition = "TEXT")// MEMO/longtext dla gotowego rozwiązania
+    private String solution;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idKursu")
     @JsonIgnore // Używamy JsonIgnore zamiast Managed/Back Reference

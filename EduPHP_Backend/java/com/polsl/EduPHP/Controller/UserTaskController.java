@@ -149,4 +149,18 @@ public class UserTaskController {
     public ResponseEntity<?> handleOptions() {
         return ResponseEntity.ok().build();
     }
+    
+    // Użyj pomocy - oznacza zadanie jako ukończone z 0 punktów
+    @PutMapping("/{userId}/task/{taskId}/use-help")
+    public ResponseEntity<?> useHelpAndComplete(
+            @PathVariable Integer userId,
+            @PathVariable Integer taskId) {
+        
+        try {
+            UserTaskDTO userTaskDTO = userTaskService.useHelpAndComplete(userId, taskId);
+            return ResponseEntity.ok(userTaskDTO);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

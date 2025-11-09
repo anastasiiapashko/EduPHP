@@ -88,12 +88,42 @@
                             <button id="executeCodeBtn" class="btn-primary">
                                 <i class="fas fa-rocket"></i> Zapisz i wykonaj
                             </button>
+                            <button id="showSolutionBtn" class="btn-help">
+                                <i class="fas fa-life-ring"></i> Pokaż rozwiązanie
+                            </button>
                             <button id="resetSolutionBtn" class="btn-danger">
                                 <i class="fas fa-trash"></i> Resetuj
                             </button>
                         </div>
                     </div>
-                    
+                    <!-- Modal pomocy -->
+                    <div id="helpModal" class="modal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3><i class="fas fa-exclamation-triangle"></i> Uwaga!</h3>
+                                <span class="close">&times;</span>
+                            </div>
+                            <div class="modal-body">
+                                <div class="warning-message">
+                                    <i class="fas fa-skull-crossbones"></i>
+                                    <p><strong>Użycie pomocy spowoduje ukończenie zadania z 0 punktów!</strong></p>
+                                    <p>Czy na pewno chcesz zobaczyć gotowe rozwiązanie?</p>
+                                </div>
+                                <div class="solution-preview">
+                                    <h4>Rozwiązanie:</h4>
+                                    <pre id="solutionPreview">Ładowanie rozwiązania...</pre>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="confirmHelpBtn" class="btn-danger">
+                                    <i class="fas fa-check"></i> Tak, pokaż rozwiązanie (0 pkt)
+                                </button>
+                                <button id="cancelHelpBtn" class="btn-secondary">
+                                    <i class="fas fa-times"></i> Anuluj
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="compiler-body">
                         <div class="editor-panel active" id="editorPanel">
                             <textarea id="codeEditor" ></textarea>

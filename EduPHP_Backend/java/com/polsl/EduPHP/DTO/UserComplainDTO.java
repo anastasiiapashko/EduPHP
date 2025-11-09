@@ -7,7 +7,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserCompainDTO {
+public class UserComplainDTO {
     private Integer idApp;
     private String tytul;
     private String opis;

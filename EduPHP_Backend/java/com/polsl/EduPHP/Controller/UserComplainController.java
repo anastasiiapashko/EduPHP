@@ -8,66 +8,66 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.polsl.EduPHP.DTO.UserCompainDTO;
-import com.polsl.EduPHP.model.UserCompain;
+import com.polsl.EduPHP.DTO.UserComplainDTO;
+import com.polsl.EduPHP.model.UserComplain;
 import com.polsl.EduPHP.model.User;
-import com.polsl.EduPHP.Service.UserCompainService;
+import com.polsl.EduPHP.Service.UserComplainService;
 import com.polsl.EduPHP.Service.UserService;
 
 @RestController
 @RequestMapping("/api/applications")
-public class UserCompainController {
+public class UserComplainController {
 
     @Autowired
-    private UserCompainService applicationService;
+    private UserComplainService applicationService;
     
     @Autowired
     private UserService userService;
     
     @GetMapping
-    public List<UserCompain> getAllApplications(){  // ← ZMIENIONE: Application zamiast ApplicationDTO
+    public List<UserComplain> getAllApplications(){  // ← ZMIENIONE: Application zamiast ApplicationDTO
         return applicationService.getAllApplications();
     }
     
     @GetMapping("/my/{userId}") 
-    public List<UserCompain> getUserApplications(@PathVariable Integer userId){  // ← ZMIENIONE
+    public List<UserComplain> getUserApplications(@PathVariable Integer userId){  // ← ZMIENIONE
         Optional<User> user = userService.findById(userId);
         return user.map(u -> applicationService.getUserApplications(u.getIdUser()))
                   .orElse(List.of()); 
     }
     
     @PostMapping("/{userId}")
-    public ResponseEntity<UserCompain> createApplication(@PathVariable Integer userId, @RequestBody UserCompain application) {  // ← ZMIENIONE
+    public ResponseEntity<UserComplain> createApplication(@PathVariable Integer userId, @RequestBody UserComplain application) {  // ← ZMIENIONE
         Optional<User> user = userService.findById(userId);
         
         if (user.isPresent()) {
-            UserCompain savedApplication = applicationService.createApplication(application, user.get());
+            UserComplain savedApplication = applicationService.createApplication(application, user.get());
             return ResponseEntity.ok(savedApplication);
         }
         return ResponseEntity.badRequest().build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserCompain> getApplicationById(@PathVariable Integer id) {  // ← ZMIENIONE
-        Optional<UserCompain> application = applicationService.getApplicationById(id);
+    public ResponseEntity<UserComplain> getApplicationById(@PathVariable Integer id) {  // ← ZMIENIONE
+        Optional<UserComplain> application = applicationService.getApplicationById(id);
         return application.map(ResponseEntity::ok)
                          .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserCompain> updateApplication(@PathVariable Integer id, @RequestBody UserCompain applicationDetails) {  // ← ZMIENIONE
+    public ResponseEntity<UserComplain> updateApplication(@PathVariable Integer id, @RequestBody UserComplain applicationDetails) {  // ← ZMIENIONE
         if (!applicationService.applicationExists(id)) {
             return ResponseEntity.notFound().build();
         }
         
-        Optional<UserCompain> application = applicationService.getApplicationById(id);
+        Optional<UserComplain> application = applicationService.getApplicationById(id);
         
         if (application.isPresent()) {
-            UserCompain existingApplication = application.get();
+            UserComplain existingApplication = application.get();
             existingApplication.setTytul(applicationDetails.getTytul());
             existingApplication.setOpis(applicationDetails.getOpis());
             
-            UserCompain updatedApplication = applicationService.updateApplication(existingApplication);
+            UserComplain updatedApplication = applicationService.updateApplication(existingApplication);
             return ResponseEntity.ok(updatedApplication);
         }
         return ResponseEntity.notFound().build();

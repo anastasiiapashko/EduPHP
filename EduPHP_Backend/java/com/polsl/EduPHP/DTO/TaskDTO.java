@@ -14,5 +14,6 @@ public class TaskDTO {
     private String inputs;
     private String outputs;
     private String difficulty;
+    private String solution;
     private Integer kursId; // tylko ID kursu zamiast całego obiektu
 }

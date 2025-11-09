@@ -1,7 +1,8 @@
 // js/task_solve.js
 import { showGlobalError } from './utils.js';
-import { getCurrentUserId, checkAuth, requireAuth } from './auth.js';
+import { getCurrentUserId} from './auth.js';
 import { PHPCompiler } from './php_compiler.js';
+import { ScoreCalculator } from './calculation_score.js';
 
 class TaskSolver {
     constructor() {
@@ -10,7 +11,8 @@ class TaskSolver {
         this.taskData = null;
         this.userTaskData = null;
         this.phpCompiler = null;
-        
+        this.scoreCalculator = new ScoreCalculator();
+
         this.init();
     }
 
@@ -24,6 +26,7 @@ class TaskSolver {
         await this.loadUserTaskData();
         this.initializePHPCompiler();
         this.setupEventListeners();
+        this.setupHelpModal();
         this.updateUI();
     }
 
@@ -129,6 +132,154 @@ class TaskSolver {
                 this.submitSolution();
             });
         }
+
+           // Przycisk pokaż rozwiązanie
+        const showSolutionBtn = document.getElementById('showSolutionBtn');
+        if (showSolutionBtn) {
+            showSolutionBtn.addEventListener('click', () => {
+                this.showHelpModal();
+            });
+        }
+
+        // Modal pomocy
+        const helpModal = document.getElementById('helpModal');
+        const closeBtn = helpModal.querySelector('.close');
+        const cancelHelpBtn = document.getElementById('cancelHelpBtn');
+        const confirmHelpBtn = document.getElementById('confirmHelpBtn');
+
+        closeBtn.addEventListener('click', () => this.hideHelpModal());
+        cancelHelpBtn.addEventListener('click', () => this.hideHelpModal());
+        confirmHelpBtn.addEventListener('click', () => this.useHelp());
+
+        // Zamknij modal kliknięciem w tło
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                this.hideHelpModal();
+            }
+        });
+    }
+
+
+    setupHelpModal() {
+        // Ukryj modal na starcie
+        this.hideHelpModal();
+    }
+
+    async showHelpModal() {
+        const helpModal = document.getElementById('helpModal');
+        const solutionPreview = document.getElementById('solutionPreview');
+        
+        if (this.taskData && this.taskData.solution) {
+            solutionPreview.textContent = this.taskData.solution;
+        } else {
+            solutionPreview.textContent = 'Brak dostępnego rozwiązania dla tego zadania.';
+        }
+        
+        helpModal.style.display = 'block';
+    }
+
+    hideHelpModal() {
+        const helpModal = document.getElementById('helpModal');
+        helpModal.style.display = 'none';
+    }
+
+    async useHelp() {
+    try {
+        const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/use-help`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            showGlobalError('✅ Zadanie ukończone z pomocą (0 punktów)', 'success');
+            this.hideHelpModal();
+            
+            // Wstaw rozwiązanie do edytora
+            if (this.taskData && this.taskData.solution) {
+                this.phpCompiler.setEditorContent(this.taskData.solution);
+            }
+            
+            await this.loadUserTaskData();
+            this.updateUI();
+        } else {
+            // Pobierz szczegóły błędu z odpowiedzi
+            let errorMessage = 'Błąd podczas używania pomocy';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorMessage;
+            } catch (e) {
+                errorMessage = `Błąd ${response.status}: ${response.statusText}`;
+            }
+            throw new Error(errorMessage);
+        }
+    } catch (error) {
+        console.error('Błąd podczas używania pomocy:', error);
+        showGlobalError(`❌ Nie udało się użyć pomocy: ${error.message}`, 'error');
+    }
+}
+
+    // Modyfikacja metody submitSolution do użycia ScoreCalculator
+    async submitSolution() {
+        const solution = this.phpCompiler.getCurrentCode();
+        
+        try {
+            // Zapisz rozwiązanie
+            const saveResponse = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/solution`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ solution: solution })
+            });
+
+            if (!saveResponse.ok) {
+                throw new Error('Błąd podczas zapisywania rozwiązania');
+            }
+
+            // Oblicz wynik na podstawie czasu i prób
+            const timeSpent = this.calculateTimeSpent();
+            const attempts = this.userTaskData ? this.userTaskData.attempts + 1 : 1;
+            const score = this.scoreCalculator.calculateScore(timeSpent, attempts);
+
+            // Oznacz jako ukończone
+            const completeResponse = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/complete`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ score: Math.round(score) })
+            });
+
+            if (completeResponse.ok) {
+                const analysis = this.scoreCalculator.getScoreAnalysis(timeSpent, attempts);
+                showGlobalError(`✅ Zadanie ukończone! Wynik: ${Math.round(score)}/10 (czas: ${timeSpent}min, próby: ${attempts})`, 'success');
+                
+                await this.loadUserTaskData();
+                this.updateUI();
+            } else {
+                throw new Error('Błąd podczas przesyłania rozwiązania');
+            }
+        } catch (error) {
+            console.error('Błąd podczas przesyłania rozwiązania:', error);
+            showGlobalError('❌ Nie udało się przesłać rozwiązania', 'error');
+        }
+    }
+
+    calculateTimeSpent() {
+        if (!this.userTaskData || !this.userTaskData.startDate) {
+            return 0;
+        }
+        
+        const startDate = new Date(this.userTaskData.startDate);
+        const now = new Date();
+        const diffMs = now - startDate;
+        return Math.max(0, Math.round(diffMs / (1000 * 60))); // minuty
     }
 
     updateUI() {

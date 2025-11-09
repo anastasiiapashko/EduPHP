@@ -229,4 +229,39 @@ public class UserTaskService {
         
         return stats;
     }
+    
+    // Użyj pomocy - ukończ zadanie z 0 punktów
+    public UserTaskDTO useHelpAndComplete(Integer userId, Integer taskId) {
+        Optional<UserTask> userTaskOpt = userTaskRepository.findByUser_IdUserAndTask_IdTask(userId, taskId);
+        
+        UserTask userTask;
+        
+        if (userTaskOpt.isPresent()) {
+            // Rekord istnieje - użyj go
+            userTask = userTaskOpt.get();
+        } else {
+            // Rekord nie istnieje - utwórz nowy
+            Optional<User> userOpt = userRepository.findById(userId);
+            Optional<Task> taskOpt = taskRepository.findById(taskId);
+            
+            if (userOpt.isEmpty() || taskOpt.isEmpty()) {
+                throw new IllegalArgumentException("Użytkownik lub zadanie nie istnieje");
+            }
+            
+            userTask = new UserTask();
+            userTask.setUser(userOpt.get());
+            userTask.setTask(taskOpt.get());
+            userTask.setStartDate(LocalDateTime.now());
+            userTask.setAttempts(0);
+        }
+        
+        // Ustaw parametry ukończenia z pomocą
+        userTask.setStatus("COMPLETED");
+        userTask.setCompletionDate(LocalDateTime.now());
+        userTask.setScore(0); // ZAWSZE 0 punktów za użycie pomocy
+        userTask.setUserSolution("UŻYTO POMOC - " + LocalDateTime.now()); // Oznaczenie
+        
+        UserTask saved = userTaskRepository.save(userTask);
+        return mapToDTO(saved);
+    }
 }

@@ -7,32 +7,32 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.polsl.EduPHP.DTO.UserCompainDTO;
-import com.polsl.EduPHP.Repository.UserCompainRepository;
-import com.polsl.EduPHP.model.UserCompain;
+import com.polsl.EduPHP.DTO.UserComplainDTO;
+import com.polsl.EduPHP.Repository.UserComplainRepository;
+import com.polsl.EduPHP.model.UserComplain;
 import com.polsl.EduPHP.model.User;
 
 @Service
-public class UserCompainService {
+public class UserComplainService {
 
 	@Autowired
-	private UserCompainRepository applicationRepository;
+	private UserComplainRepository applicationRepository;
 	
-	public List<UserCompain> getAllApplications(){
+	public List<UserComplain> getAllApplications(){
 		return applicationRepository.findAllByOrderByDatePublishDesc();
 	}
 	
-	public List<UserCompain> getUserApplications(Integer userId){
+	public List<UserComplain> getUserApplications(Integer userId){
 		return applicationRepository.findByUser_IdUser(userId);
 	}
 	
-	public UserCompain createApplication(UserCompain application, User user) {
+	public UserComplain createApplication(UserComplain application, User user) {
 		application.setUser(user);
 		application.setDatePublish(LocalDateTime.now());
 		return applicationRepository.save(application);
 	}
 	
-	public Optional<UserCompain> getApplicationById(Integer id) {
+	public Optional<UserComplain> getApplicationById(Integer id) {
         return applicationRepository.findById(id);
     }
 
@@ -40,7 +40,7 @@ public class UserCompainService {
         applicationRepository.deleteById(id);
     }
 
-    public UserCompain updateApplication(UserCompain application) {
+    public UserComplain updateApplication(UserComplain application) {
         return applicationRepository.save(application);
     }
 
@@ -54,8 +54,8 @@ public class UserCompainService {
         return applicationRepository.count();
     }
     
-    public UserCompainDTO convertToDTO(UserCompain app) {
-        UserCompainDTO dto = new UserCompainDTO();
+    public UserComplainDTO convertToDTO(UserComplain app) {
+        UserComplainDTO dto = new UserComplainDTO();
         dto.setIdApp(app.getIdApp());
         dto.setTytul(app.getTytul());
         dto.setOpis(app.getOpis());

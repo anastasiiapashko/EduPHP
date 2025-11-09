@@ -14,13 +14,13 @@ import org.springframework.stereotype.Service;
 import com.polsl.EduPHP.DTO.UserLogowanieDTO;
 import com.polsl.EduPHP.DTO.UserRegisterDTO;
 import com.polsl.EduPHP.Repository.ProfilRepository;
-import com.polsl.EduPHP.Repository.UserCompainRepository;
+import com.polsl.EduPHP.Repository.UserComplainRepository;
 import com.polsl.EduPHP.Repository.UserKursRepository;
 import com.polsl.EduPHP.Repository.UserRepository;
 import com.polsl.EduPHP.Repository.UserTaskRepository;
 import com.polsl.EduPHP.model.Profil;
 import com.polsl.EduPHP.model.User;
-import com.polsl.EduPHP.model.UserCompain;
+import com.polsl.EduPHP.model.UserComplain;
 import com.polsl.EduPHP.model.UserKurs;
 import com.polsl.EduPHP.model.UserTask;
 
@@ -43,7 +43,7 @@ public class UserService {
 	private UserTaskRepository userTaskRepository;
 
 	@Autowired 
-	private UserCompainRepository userCompainRepository;
+	private UserComplainRepository userCompainRepository;
 	
 	@Autowired
     private PasswordEncoder passwordEncoder;
@@ -380,7 +380,7 @@ public Map<String, Object> sprawdzLogin(UserLogowanieDTO logowanie) {
 	    } 
 	    
 	    // 3. Usuń zgłoszenia
-	    List<UserCompain> userCompains = userCompainRepository.findByUser_IdUser(userId);
+	    List<UserComplain> userCompains = userCompainRepository.findByUser_IdUser(userId);
 	    if (userCompains != null && !userCompains.isEmpty()) {
 	        userCompainRepository.deleteAll(userCompains);
 	    }

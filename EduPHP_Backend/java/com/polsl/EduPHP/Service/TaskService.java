@@ -157,6 +157,7 @@ public class TaskService {
         dto.setInputs(task.getInputs());
         dto.setOutputs(task.getOutputs());
         dto.setDifficulty(task.getDifficulty());
+        dto.setSolution(task.getSolution());
         if (task.getKurs() != null) {
             dto.setKursId(task.getKurs().getIdKursu());
         }
@@ -171,6 +172,7 @@ public class TaskService {
         task.setInputs(dto.getInputs());
         task.setOutputs(dto.getOutputs());
         task.setDifficulty(dto.getDifficulty());
+        task.setSolution(dto.getSolution());
         // Kurs ustawiany osobno
         return task;
     }
