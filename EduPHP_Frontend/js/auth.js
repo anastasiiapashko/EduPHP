@@ -156,8 +156,6 @@ function setupLoginForm() {
                 console.log('Status:', response.status);
                 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Błąd odpowiedzi:', errorText);
                     throw new Error(`Błąd serwera: ${response.status}`);
                 }
 
@@ -189,7 +187,7 @@ function setupLoginForm() {
             } catch (error) {
                 console.error('Błąd podczas logowania:', error);
                 if (errorDiv) {
-                    errorDiv.textContent = error.message || 'Błąd połączenia z serwerem';
+                    errorDiv.textContent = error.message;
                     errorDiv.className = 'error show';
                     setTimeout(() => {
                         errorDiv.className = 'error';

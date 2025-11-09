@@ -1,4 +1,4 @@
-import { checkAuth, getCurrentUserId } from './auth.js';
+import { getCurrentUserId } from './auth.js';
 import { updateCharCounter } from './utils.js';
 
 

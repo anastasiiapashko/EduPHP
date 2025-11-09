@@ -43,6 +43,9 @@ public class User {
     @Column(name = "sandbox_user_id", unique = true)
     private Integer sandboxUserId;
     
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+    
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnore
     private Set<UserCompain> userApplication = new HashSet<>();

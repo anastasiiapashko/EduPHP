@@ -1,4 +1,3 @@
-import { checkAuth } from './auth.js';
 import { isAdmin } from './permissions.js';
 
 export function setupCreatorPage() {

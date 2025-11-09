@@ -281,61 +281,69 @@ public class UserService {
         return userRepository.findByLogin(login);
     }
     
-	public Map<String, Object> sprawdzLogin(UserLogowanieDTO logowanie) {
-        Map<String, Object> response = new HashMap<>();
-        
-        try {
-            // ✅ WALIDACJA WEJŚCIA LOGOWANIA
-            if (logowanie.getLogin() == null || logowanie.getLogin().trim().isEmpty()) {
-                response.put("valid", false);
-                response.put("message", "Login jest wymagany");
-                return response;
-            }
-            
-            if (logowanie.getPasswd() == null || logowanie.getPasswd().trim().isEmpty()) {
-                response.put("valid", false);
-                response.put("message", "Hasło jest wymagane");
-                return response;
-            }
-            
-            // ✅ SANITYZACJA LOGINA
-            String sanitizedLogin = sanitizeInput(logowanie.getLogin().trim());
-            
-            // ✅ SZUKAJ UŻYTKOWNIKA
-            Optional<User> userOpt = userRepository.findByLogin(sanitizedLogin);
-            
-            if (userOpt.isPresent()) {
-                User user = userOpt.get();
-                
-                // ✅ WERYFIKACJA HASŁA Z HASHOWANIEM
-                if (passwordEncoder.matches(logowanie.getPasswd(), user.getPasswd())) {
-                	
-                	// ✅ AKTUALIZUJ CZAS OSTATNIEGO LOGOWANIA
-                    updateLastLoginTime(user.getIdUser());
-                    
-                    response.put("valid", true);
-                    response.put("userId", user.getIdUser());
-                    response.put("firstName", user.getFirstName());
-                    response.put("secondName", user.getSecondName());
-                    response.put("login", user.getLogin());
-                    response.put("rola", user.getRola());
-                } else {
-                    response.put("valid", false);
-                    response.put("message", "Nieprawidłowe hasło");
-                }
-            } else {
-                response.put("valid", false);
-                response.put("message", "Użytkownik nie istnieje");
-            }
-            
-        } catch (Exception e) {
+public Map<String, Object> sprawdzLogin(UserLogowanieDTO logowanie) {
+    Map<String, Object> response = new HashMap<>();
+    
+    try {
+        // ✅ WALIDACJA WEJŚCIA LOGOWANIA
+        if (logowanie.getLogin() == null || logowanie.getLogin().trim().isEmpty()) {
             response.put("valid", false);
-            response.put("message", "Błąd serwera: " + e.getMessage());
-            e.printStackTrace();
+            response.put("message", "Login jest wymagany");
+            return response;
         }
         
-        return response;
+        if (logowanie.getPasswd() == null || logowanie.getPasswd().trim().isEmpty()) {
+            response.put("valid", false);
+            response.put("message", "Hasło jest wymagane");
+            return response;
+        }
+        
+        // ✅ SANITYZACJA LOGINA
+        String sanitizedLogin = sanitizeInput(logowanie.getLogin().trim());
+        
+        // ✅ SZUKAJ UŻYTKOWNIKA
+        Optional<User> userOpt = userRepository.findByLogin(sanitizedLogin);
+        
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            
+            // ✅ WERYFIKACJA HASŁA Z HASHOWANIEM
+            if (passwordEncoder.matches(logowanie.getPasswd(), user.getPasswd())) {
+                
+                // ✅ SPRAWDŹ CZY UŻYTKOWNIK JEST AKTYWNY - DODANE
+                if (Boolean.FALSE.equals(user.getIsActive())) {
+                    response.put("valid", false);
+                    response.put("message", "❌ Twoje konto jest zablokowane. Skontaktuj się z administratorem.");
+                    return response;
+                }
+                
+                // ✅ AKTUALIZUJ CZAS OSTATNIEGO LOGOWANIA
+                updateLastLoginTime(user.getIdUser());
+                
+                response.put("valid", true);
+                response.put("userId", user.getIdUser());
+                response.put("firstName", user.getFirstName());
+                response.put("secondName", user.getSecondName());
+                response.put("login", user.getLogin());
+                response.put("rola", user.getRola());
+                response.put("active", user.getIsActive()); 
+            } else {
+                response.put("valid", false);
+                response.put("message", "Nieprawidłowe hasło");
+            }
+        } else {
+            response.put("valid", false);
+            response.put("message", "Użytkownik nie istnieje");
+        }
+        
+    } catch (Exception e) {
+        response.put("valid", false);
+        response.put("message", "Błąd serwera: " + e.getMessage());
+        e.printStackTrace();
     }
+    
+    return response;
+}
 	
 	// ✅ DODAJ METODĘ DO AKTUALIZACJI CZASU LOGOWANIA
 	private void updateLastLoginTime(Integer userId) {

@@ -13,6 +13,7 @@ import { setupApplicationsPage } from './application.js';
 import { setupTasksPage } from './tasks.js';
 import { setupCreatorPage } from './addTask.js'; 
 import { setupTaskSolvePage } from './task_solve.js';
+import { setupAdminUsersPage } from './admin_users.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     try {
@@ -64,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setupTasksPage();
             setupCreatorPage();
             setupTaskSolvePage();
+            setupAdminUsersPage();
         }
         
         console.log('Inicjalizacja zakończona pomyślnie');
