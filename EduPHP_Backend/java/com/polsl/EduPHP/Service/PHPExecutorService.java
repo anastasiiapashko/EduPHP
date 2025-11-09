@@ -1,6 +1,7 @@
 package com.polsl.EduPHP.Service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,9 @@ import java.time.format.DateTimeFormatter;
 @Transactional
 public class PHPExecutorService {
     
+	@Autowired
+    private SandboxUserService sandboxUserService;
+	
     @Value("${php.executor.path:C:\\Users\\Lenovo\\Documents\\workspace-spring-tool-suite-4-4.29.1.RELEASE\\EduPHP - git\\EduPHP\\php\\php.exe}")
     private String phpExecutablePath;
     
@@ -62,7 +66,7 @@ public class PHPExecutorService {
         String filename = generateSolutionFilename(taskId); // Tylko task_X.php
         Path solutionFile = userDir.resolve(filename);
         
-        String securedCode = addPHPSecurityWrappers(phpCode);
+        String securedCode = addPHPSecurityWrappers(phpCode, userId);
         
         // Nadpisz plik jeśli istnieje, utwórz jeśli nie istnieje
         Files.writeString(solutionFile, securedCode, 
@@ -105,7 +109,7 @@ public class PHPExecutorService {
                 String content = Files.readString(latestFile);
                 String userCode = extractUserCode(content);
                 Path newFile = userDir.resolve("task_" + taskId + ".php");
-                Files.writeString(newFile, addPHPSecurityWrappers(userCode), 
+                Files.writeString(newFile, addPHPSecurityWrappers(userCode, userId), 
                     StandardOpenOption.CREATE, 
                     StandardOpenOption.TRUNCATE_EXISTING);
                 
@@ -169,7 +173,7 @@ public class PHPExecutorService {
             userId, taskId, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmssSSS")));
         Path phpFile = tempDir.resolve(filename);
         
-        String securedCode = addPHPSecurityWrappers(phpCode);
+        String securedCode = addPHPSecurityWrappers(phpCode, userId);
         Files.writeString(phpFile, securedCode, StandardOpenOption.CREATE);
         
         System.out.println("Created temp file: " + phpFile.toAbsolutePath());
@@ -182,8 +186,10 @@ public class PHPExecutorService {
     }
     
     //Wrapper jest jako obudowa bezpieczeństwa, zapobiega uruchomiania złośliwego kodu, a kod usera daje w miejsce phpCode
-    private String addPHPSecurityWrappers(String phpCode) {
-        // Usuń istniejące tagi PHP z kodu użytkownika
+    private String addPHPSecurityWrappers(String phpCode, Integer userId) {
+        // Pobierz/generuj sandbox_id
+        Integer sandboxUserId = sandboxUserService.getOrCreateSandboxUserId(userId);
+        
         String cleanCode = phpCode.trim();
         if (cleanCode.startsWith("<?php")) {
             cleanCode = cleanCode.substring(5);
@@ -194,41 +200,143 @@ public class PHPExecutorService {
         cleanCode = cleanCode.trim();
         
         return "<?php\n" +
-               "// AUTO-GENERATED SECURITY WRAPPERS - EduPHP\n" +
-               "error_reporting(E_ALL);\n" +
-               "ini_set('display_errors', '1');\n" + // Tymczasowo włącz błędy
-               "ini_set('max_execution_time', 10);\n" +
-               "ini_set('memory_limit', '128M');\n" +
-               "set_time_limit(10);\n" +
-               "\n" +
-               "// Wyłącz niebezpieczne funkcje\n" +
-               "disable_functions();\n" +
-               "\n" +
-               "function disable_functions() {\n" +
-               "    $dangerous = ['system','exec','passthru','shell_exec','popen','proc_open',\n" +
-               "                  'curl_exec','eval','assert','create_function'];\n" + // Usunięte include,require
-               "    ini_set('disable_functions', implode(',', $dangerous));\n" +
-               "}\n" +
-               "disable_functions();\n" +
-               "\n" +
-               "// POŁĄCZENIE Z BAZĄ DANYCH\n" +
-               "$conn = new mysqli(\"localhost\", \"php_sandbox_user\", \"sandbox_password123\", \"eduphp_sandbox\");\n" +
-               "if ($conn->connect_error) {\n" +
-               "    die(\"Błąd połączenia z bazą: \" . $conn->connect_error);\n" +
-               "}\n" +
-               "\n" +
-               "try {\n" +
-               cleanCode + "\n" +
-               "} catch (Throwable $e) {\n" +
-               "    echo 'RUNTIME_ERROR: ' . $e->getMessage() . \"\\n\";\n" +
-               "} finally {\n" +
-               "    // ZAMKNIĘCIE POŁĄCZENIA Z BAZĄ\n" +
-               "    if (isset($conn)) {\n" +
-               "        $conn->close();\n" +
-               "    }\n" +
-               "}\n" +
-               "?>";
-    }
+        "// AUTO-GENERATED SECURITY WRAPPERS - EduPHP\n" +
+        "error_reporting(E_ALL);\n" +
+        "ini_set('display_errors', '1');\n" +
+        "ini_set('max_execution_time', 10);\n" +
+        "ini_set('memory_limit', '128M');\n" +
+        "set_time_limit(10);\n" +
+        "\n" +
+        "// Wyłącz niebezpieczne funkcje\n" +
+        "disable_functions();\n" +
+        "\n" +
+        "function disable_functions() {\n" +
+        "    $dangerous = ['system','exec','passthru','shell_exec','popen','proc_open',\n" +
+        "                  'curl_exec','eval','assert','create_function'];\n" +
+        "    ini_set('disable_functions', implode(',', $dangerous));\n" +
+        "}\n" +
+        "disable_functions();\n" +
+        "\n" +
+        "// POŁĄCZENIE Z BAZĄ DANYCH Z RANDOM USER ID\n" +
+        "$conn = new mysqli(\"localhost\", \"php_sandbox_user\", \"sandbox_password123\", \"eduphp_sandbox\");\n" +
+        "if ($conn->connect_error) {\n" +
+        "    die(\"Błąd połączenia z bazą: \" . $conn->connect_error);\n" +
+        "}\n" +
+        "\n" +
+        "// RANDOM USER ID DLA IZOLACJI DANYCH\n" +
+        "$current_user_id = " + sandboxUserId + "; // Random ID: " + sandboxUserId + "\n" +
+        "\n" +
+        "// NADPISANIE METOD QUERY DLA AUTOMATYCZNEJ IZOLACJI (PHP 8.1+ COMPATIBLE)\n" +
+        "class SecuredMySQLi extends mysqli {\n" +
+        "    private int $user_id;\n" +
+        "    \n" +
+        "    public function __construct(string $host, string $user, string $password, string $database, int $user_id) {\n" +
+        "        parent::__construct($host, $user, $password, $database);\n" +
+        "        $this->user_id = $user_id;\n" +
+        "    }\n" +
+        "    \n" +
+        "    public function query(string $query, int $resultmode = MYSQLI_STORE_RESULT): mysqli_result|bool {\n" +
+        "        $secured_query = $this->addUserIsolation($query);\n" +
+        "        return parent::query($secured_query, $resultmode);\n" +
+        "    }\n" +
+        "    \n" +
+        "    public function prepare(string $query): mysqli_stmt|false {\n" +
+        "        $secured_query = $this->addUserIsolation($query);\n" +
+        "        return parent::prepare($secured_query);\n" +
+        "    }\n" +
+        "    \n" +
+        "    private function addUserIsolation(string $query): string {\n" +
+        "        // Analiza zapytania SQL\n" +
+        "        $query_upper = strtoupper(trim($query));\n" +
+        "        \n" +
+        "        // Dla SELECT - dodaj warunek user_id\n" +
+        "        if (strpos($query_upper, 'SELECT') === 0) {\n" +
+        "            return $this->modifySelectQuery($query);\n" +
+        "        }\n" +
+        "        \n" +
+        "        // Dla INSERT - automatycznie dodaj user_id\n" +
+        "        if (strpos($query_upper, 'INSERT') === 0) {\n" +
+        "            return $this->modifyInsertQuery($query);\n" +
+        "        }\n" +
+        "        \n" +
+        "        // Dla UPDATE/DELETE - dodaj warunek user_id\n" +
+        "        if (strpos($query_upper, 'UPDATE') === 0 || strpos($query_upper, 'DELETE') === 0) {\n" +
+        "            return $this->modifyUpdateDeleteQuery($query);\n" +
+        "        }\n" +
+        "        \n" +
+        "        return $query;\n" +
+        "    }\n" +
+        "    \n" +
+        "    private function modifySelectQuery(string $query): string {\n" +
+        "        if (stripos($query, 'WHERE') !== false) {\n" +
+        "            return preg_replace('/WHERE\\s+/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) AND ', $query);\n" +
+        "        } else {\n" +
+        "            // Dodaj WHERE jeśli nie ma\n" +
+        "            if (stripos($query, 'GROUP BY') !== false) {\n" +
+        "                return preg_replace('/GROUP BY/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) GROUP BY', $query);\n" +
+        "            } elseif (stripos($query, 'ORDER BY') !== false) {\n" +
+        "                return preg_replace('/ORDER BY/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) ORDER BY', $query);\n" +
+        "            } elseif (stripos($query, 'LIMIT') !== false) {\n" +
+        "                return preg_replace('/LIMIT/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) LIMIT', $query);\n" +
+        "            } else {\n" +
+        "                return $query . ' WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL)';\n" +
+        "            }\n" +
+        "        }\n" +
+        "    }\n" +
+        "\n" +
+        "    private function modifyInsertQuery(string $query): string {\n" +
+        "        // Sprawdź czy podano kolumny\n" +
+        "        if (preg_match('/INSERT\\s+INTO\\s+\\w+\\s*\\((.*?)\\)/i', $query, $matches)) {\n" +
+        "            // INSERT z kolumnami: INSERT INTO table (col1, col2) VALUES (val1, val2)\n" +
+        "            $columns = $matches[1];\n" +
+        "            $new_columns = $columns . ', user_id';\n" +
+        "            \n" +
+        "            // Dodaj wartość user_id do VALUES\n" +
+        "            $query = preg_replace('/VALUES\\s*\\((.*?)\\)/i', 'VALUES($1, ' . $this->user_id . ')', $query);\n" +
+        "            $query = str_replace('(' . $columns . ')', '(' . $new_columns . ')', $query);\n" +
+        "        } else {\n" +
+        "            // INSERT bez kolumn: INSERT INTO table VALUES (val1, val2)\n" +
+        "            $query = preg_replace('/VALUES\\s*\\((.*?)\\)/i', 'VALUES($1, ' . $this->user_id . ')', $query);\n" +
+        "        }\n" +
+        "        \n" +
+        "        return $query;\n" +
+        "    }\n" +
+        "    \n" +
+        "    private function modifyUpdateDeleteQuery(string $query): string {\n" +
+        "        if (stripos($query, 'WHERE') !== false) {\n" +
+        "            return preg_replace('/WHERE\\s+/i', 'WHERE user_id = ' . $this->user_id . ' AND ', $query);\n" +
+        "        } else {\n" +
+        "            return $query . ' WHERE user_id = ' . $this->user_id;\n" +
+        "        }\n" +
+        "    }\n" +
+        "}\n" +
+        "\n" +
+        "// ZASTĄP STANDARDOWE POŁĄCZENIE ZABEZPIECZONYM\n" +
+        "$secured_conn = new SecuredMySQLi(\"localhost\", \"php_sandbox_user\", \"sandbox_password123\", \"eduphp_sandbox\", $current_user_id);\n" +
+        "if ($secured_conn->connect_error) {\n" +
+        "    die(\"Błąd połączenia z bazą: \" . $secured_conn->connect_error);\n" +
+        "}\n" +
+        "\n" +
+        "$conn = $secured_conn;\n" +
+        "\n" +
+        "try {\n" +
+        cleanCode + "\n" +
+        "} catch (Throwable $e) {\n" +
+        "    $error_msg = 'RUNTIME_ERROR: ' . $e->getMessage();\n" +
+        "    \n" +
+        "    // Dodatkowa pomoc dla częstych błędów\n" +
+        "    if (strpos($e->getMessage(), 'Column count doesn\\'t match value count') !== false) {\n" +
+        "        $error_msg .= \"\\n💡 Wskazówka: Upewnij się, że podajesz nazwy kolumn w INSERT: INSERT INTO tabela (kol1, kol2) VALUES (wart1, wart2)\";\n" +
+        "    }\n" +
+        "    \n" +
+        "    echo $error_msg . \"\\n\";\n" +
+        "} finally {\n" +
+        "    if (isset($secured_conn)) {\n" +
+        "        $secured_conn->close();\n" +
+        "    }\n" +
+        "}\n" +
+        "?>";
+ }
     
     private Process executePHPProcess(Path phpFile) throws IOException, TimeoutException {
         ProcessBuilder processBuilder = new ProcessBuilder(

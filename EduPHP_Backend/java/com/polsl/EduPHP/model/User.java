@@ -40,6 +40,9 @@ public class User {
     @JsonIgnore
     private Profil profil;
     
+    @Column(name = "sandbox_user_id", unique = true)
+    private Integer sandboxUserId;
+    
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnore
     private Set<UserCompain> userApplication = new HashSet<>();
