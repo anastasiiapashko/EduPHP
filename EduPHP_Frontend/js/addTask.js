@@ -1,4 +1,5 @@
 import { isAdmin } from './permissions.js';
+import { fillTaskFormWithSolution } from './addSolution.js';
 
 export function setupCreatorPage() {
     if (!document.querySelector('.creator-container')) {
@@ -126,6 +127,7 @@ class TaskCreatorManager {
             inputs: formData.get('inputs'),
             outputs: formData.get('outputs'),
             difficulty: formData.get('difficulty'),
+            solution: formData.get('solution'),
             kursId: parseInt(kursId)
         };
 
@@ -278,7 +280,7 @@ class TaskCreatorManager {
     // Event listeners dla zarządzania zadaniami
     setupTaskManagementEventListeners() {
         // Edycja zadania
-        document.querySelectorAll('.edit-task-btn').forEach(btn => {
+        document.querySelectorAll('.btn-edit').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const taskId = e.target.closest('button').dataset.taskId;
                 this.editTask(parseInt(taskId));
@@ -286,7 +288,7 @@ class TaskCreatorManager {
         });
 
         // Usuwanie zadania
-        document.querySelectorAll('.delete-task-btn').forEach(btn => {
+        document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const taskId = e.target.closest('button').dataset.taskId;
                 this.deleteTask(parseInt(taskId));
@@ -316,6 +318,9 @@ class TaskCreatorManager {
         if (courseSelect) {
             courseSelect.value = task.kursId || '';
         }
+
+        // WYPEŁNIJ POLE ROZWIĄZANIA 
+         fillTaskFormWithSolution(task);
 
         // Przełącz na tryb edycji
         this.currentEditTaskId = task.idTask;

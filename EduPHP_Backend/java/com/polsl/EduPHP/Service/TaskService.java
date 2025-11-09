@@ -108,6 +108,7 @@ public class TaskService {
             task.setInputs(taskDTO.getInputs());
             task.setOutputs(taskDTO.getOutputs());
             task.setDifficulty(taskDTO.getDifficulty());
+            task.setSolution(taskDTO.getSolution());
             
             if (taskDTO.getKursId() != null) {
                 Optional<Kurs> kursOpt = kursRepository.findById(taskDTO.getKursId());
