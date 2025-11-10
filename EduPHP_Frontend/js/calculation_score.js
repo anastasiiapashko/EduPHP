@@ -1,4 +1,4 @@
-// calculation_score.js - system oceniania zadań
+// js/calculation_score.js - system oceniania zadań
 export class ScoreCalculator {
     constructor() {
         this.maxAttempts = 10;

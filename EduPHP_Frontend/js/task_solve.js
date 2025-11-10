@@ -125,7 +125,7 @@ class TaskSolver {
             });
         }
 
-        // Prześlij do oceny (jeśli masz taki przycisk)
+        // Prześlij do oceny "Skończyłem"
         const submitBtn = document.getElementById('submitSolutionBtn');
         if (submitBtn) {
             submitBtn.addEventListener('click', () => {
@@ -223,53 +223,95 @@ class TaskSolver {
 }
 
     // Modyfikacja metody submitSolution do użycia ScoreCalculator
-    async submitSolution() {
-        const solution = this.phpCompiler.getCurrentCode();
+async submitSolution() {
+    const solution = this.phpCompiler.getCurrentCode();
+    
+    try {
+        console.log('🟡 Rozpoczynanie przesyłania rozwiązania...');
         
-        try {
-            // Zapisz rozwiązanie
-            const saveResponse = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/solution`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({ solution: solution })
-            });
+        // 1. Najpierw zapisz rozwiązanie
+        const saveResponse = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/solution`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ solution: solution })
+        });
 
-            if (!saveResponse.ok) {
-                throw new Error('Błąd podczas zapisywania rozwiązania');
-            }
-
-            // Oblicz wynik na podstawie czasu i prób
-            const timeSpent = this.calculateTimeSpent();
-            const attempts = this.userTaskData ? this.userTaskData.attempts + 1 : 1;
-            const score = this.scoreCalculator.calculateScore(timeSpent, attempts);
-
-            // Oznacz jako ukończone
-            const completeResponse = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/complete`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({ score: Math.round(score) })
-            });
-
-            if (completeResponse.ok) {
-                const analysis = this.scoreCalculator.getScoreAnalysis(timeSpent, attempts);
-                showGlobalError(`✅ Zadanie ukończone! Wynik: ${Math.round(score)}/10 (czas: ${timeSpent}min, próby: ${attempts})`, 'success');
-                
-                await this.loadUserTaskData();
-                this.updateUI();
-            } else {
-                throw new Error('Błąd podczas przesyłania rozwiązania');
-            }
-        } catch (error) {
-            console.error('Błąd podczas przesyłania rozwiązania:', error);
-            showGlobalError('❌ Nie udało się przesłać rozwiązania', 'error');
+        console.log('💾 Status zapisywania rozwiązania:', saveResponse.status);
+        
+        if (!saveResponse.ok) {
+            const saveError = await saveResponse.text();
+            console.error('❌ Błąd zapisywania:', saveError);
+            throw new Error('Błąd podczas zapisywania rozwiązania: ' + saveError);
         }
+
+        // 2. Oblicz wynik na podstawie czasu i prób
+        const timeSpent = this.calculateTimeSpent();
+        const attempts = this.userTaskData ? this.userTaskData.attempts + 1 : 1;
+        const score = this.scoreCalculator.calculateScore(timeSpent, attempts);
+
+        console.log('📊 Obliczone dane:', {
+            timeSpentMinutes: timeSpent,
+            attempts: attempts,
+            score: score,
+            userTaskData: this.userTaskData
+        });
+
+        // 3. Przygotuj dane do wysłania
+        const completeData = { 
+            timeSpentMinutes: timeSpent,
+            attempts: attempts
+        };
+
+        console.log('📨 Wysyłane dane:', completeData);
+
+        // 4. Oznacz jako ukończone z obliczonym wynikiem
+        const completeResponse = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/complete`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(completeData)
+        });
+
+        console.log('📨 Status odpowiedzi complete:', completeResponse.status);
+
+        if (completeResponse.ok) {
+            const result = await completeResponse.json();
+            console.log('✅ Odpowiedź complete:', result);
+            
+            const analysis = this.scoreCalculator.getScoreAnalysis(timeSpent, attempts);
+            showGlobalError(`✅ Zadanie ukończone! Wynik: ${score}/10 (czas: ${timeSpent}min, próby: ${attempts})`, 'success');
+            
+            await this.loadUserTaskData();
+            this.updateUI();
+        } else {
+            // Pobierz szczegóły błędu
+            let errorMessage = 'Błąd podczas przesyłania rozwiązania';
+            let errorDetails = '';
+            
+            try {
+                const errorData = await completeResponse.json();
+                console.error('❌ Błąd z serwera:', errorData);
+                errorMessage = errorData.error || errorData.message || errorMessage;
+                errorDetails = JSON.stringify(errorData);
+            } catch (e) {
+                console.error('❌ Błąd parsowania odpowiedzi:', e);
+                errorMessage = `Błąd ${completeResponse.status}: ${completeResponse.statusText}`;
+                errorDetails = await completeResponse.text();
+            }
+            
+            console.error('❌ Pełne szczegóły błędu:', errorDetails);
+            throw new Error(`${errorMessage} | Szczegóły: ${errorDetails}`);
+        }
+    } catch (error) {
+        console.error('💥 Błąd podczas przesyłania rozwiązania:', error);
+        showGlobalError(`❌ Nie udało się przesłać rozwiązania: ${error.message}`, 'error');
     }
+}
 
     calculateTimeSpent() {
         if (!this.userTaskData || !this.userTaskData.startDate) {
@@ -283,34 +325,37 @@ class TaskSolver {
     }
 
     updateUI() {
-        if (!this.userTaskData) return;
+    if (!this.userTaskData) return;
 
-        // Status zadania
-        const statusElement = document.getElementById('taskStatus');
-        const statusText = this.getStatusText(this.userTaskData.status);
-        statusElement.textContent = statusText;
-        statusElement.className = `task-status task-status-${this.userTaskData.status.toLowerCase()}`;
+    // Status zadania
+    const statusElement = document.getElementById('taskStatus');
+    const statusText = this.getStatusText(this.userTaskData.status);
+    statusElement.textContent = statusText;
+    statusElement.className = `task-status task-status-${this.userTaskData.status.toLowerCase()}`;
 
-        // Informacje o postępie
-        document.getElementById('progressStatus').textContent = statusText;
-        document.getElementById('progressAttempts').textContent = this.userTaskData.attempts || 0;
-        document.getElementById('progressScore').textContent = this.userTaskData.score || '-';
+    // Informacje o postępie
+    document.getElementById('progressStatus').textContent = statusText;
+    document.getElementById('progressAttempts').textContent = this.userTaskData.attempts || 0;
+    
+    // POPRAWIONE: Wyświetl 0 zamiast "-" gdy wynik wynosi 0
+    const score = this.userTaskData.score;
+    document.getElementById('progressScore').textContent = score !== null && score !== undefined ? score : '-';
 
-        // Ostatnia próba
-        const lastAttempt = this.userTaskData.completionDate || this.userTaskData.startDate;
-        document.getElementById('progressLastAttempt').textContent = lastAttempt 
-            ? new Date(lastAttempt).toLocaleString('pl-PL') 
-            : '-';
+    // Ostatnia próba
+    const lastAttempt = this.userTaskData.completionDate || this.userTaskData.startDate;
+    document.getElementById('progressLastAttempt').textContent = lastAttempt 
+        ? new Date(lastAttempt).toLocaleString('pl-PL') 
+        : '-';
 
-        // Pokazuj/ukryj historię dla ukończonych zadań
-        const historySection = document.getElementById('historySection');
-        if (historySection) {
-            historySection.style.display = this.userTaskData.status === 'COMPLETED' ? 'block' : 'none';
-        }
-
-        // Aktualizuj przyciski w zależności od statusu
-        this.updateButtons();
+    // Pokazuj/ukryj historię dla ukończonych zadań
+    const historySection = document.getElementById('historySection');
+    if (historySection) {
+        historySection.style.display = this.userTaskData.status === 'COMPLETED' ? 'block' : 'none';
     }
+
+    // Aktualizuj przyciski w zależności od statusu
+    this.updateButtons();
+}
 
     getStatusText(status) {
         const statusMap = {
@@ -327,53 +372,12 @@ class TaskSolver {
         
         if (submitBtn && isCompleted) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-check"></i> Zadanie ukończone';
+            submitBtn.innerHTML = '<i class="fas fa-check"></i> Ukończone';
             submitBtn.title = 'To zadanie zostało już ukończone';
         }
     }
 
-    async submitSolution() {
-        // Tutaj możesz dodać logikę oceniania rozwiązania
-        // Na razie symulujemy ocenę
-        const score = this.evaluateSolution(this.phpCompiler.getCurrentCode());
-
-        try {
-            const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/complete`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ score: score })
-            });
-
-            if (response.ok) {
-                showGlobalError(`✅ Zadanie ukończone! Wynik: ${score}/100`, 'success');
-                await this.loadUserTaskData();
-                this.updateUI();
-            } else {
-                throw new Error('Błąd podczas przesyłania rozwiązania');
-            }
-        } catch (error) {
-            console.error('Błąd podczas przesyłania rozwiązania:', error);
-            showGlobalError('❌ Nie udało się przesłać rozwiązania', 'error');
-        }
-    }
-
-    evaluateSolution(solution) {
-        // Prosta symulacja oceniania - w przyszłości możesz dodać prawdziwy system oceniania
-        const baseScore = Math.min(100, Math.max(20, solution.length / 10));
-        return Math.round(baseScore);
-    }
-
-    resetSolution() {
-        if (confirm('Czy na pewno chcesz zresetować swoje rozwiązanie? To usunie twój obecny kod.')) {
-            this.phpCompiler.setEditorContent('');
-            
-            // Jeśli chcesz zresetować również status zadania:
-            // this.resetTaskProgress();
-        }
-    }
-
+    
     async resetTaskProgress() {
         try {
             const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/reset`, {

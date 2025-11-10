@@ -120,15 +120,60 @@ public class UserTaskService {
         throw new IllegalArgumentException("Nie znaleziono zadania dla użytkownika. Najpierw rozpocznij zadanie.");
     }
 
+    
+    public Integer calculateScore(Integer timeSpentMinutes, Integer attempts) {
+    	if(timeSpentMinutes == null || attempts == null) {
+    		return 0;
+    	}
+    	
+    	final int MAX_ATTEMPTS = 10;
+    	final int MAX_TIME_MINUTES = 30; 
+    	final double TIME_WEIGHT = 0.7; 	//70% waga czasu
+    	final double ATTEMPTS_WEIGHT =0.3;  //30% waga prób
+    	
+    	//Normalizacja czasu(0-1, gdzie 1 = najlepszy czas)
+    	double normalizedTime;
+    	if(timeSpentMinutes <= 0) {
+    		normalizedTime = 1.0;
+    	} else if(timeSpentMinutes >= MAX_TIME_MINUTES){
+    		normalizedTime = 0.0;
+    	} else {
+    		//Funkcja wykładnicza - nagroda za szybkie rozwiązanie
+    		normalizedTime = 1 - Math.pow(timeSpentMinutes / (double)MAX_TIME_MINUTES,0.7);
+    		normalizedTime = Math.max(0, Math.min(1, normalizedTime));
+    	}
+    	
+    	//Normalizacja prób (0-1, gdzie 1 = najmniej prób)
+    	double normalizedAttempts;
+    	if(attempts <= 1) {
+    		normalizedAttempts = 1.0;
+    	} else if (attempts >= MAX_ATTEMPTS) {
+    		normalizedAttempts = 0.0;
+    	} else {
+    		//Funkcja liniowa z lekkim wygładzeniem
+    		normalizedAttempts = 1 - (attempts - 1) / (double)(MAX_ATTEMPTS - 1);
+    		normalizedAttempts = Math.max(0, Math.min(1, normalizedAttempts));
+    	}
+    	
+    	//Obliczenie wyniku z wagami
+    	double score = (normalizedTime * TIME_WEIGHT) + (normalizedAttempts * ATTEMPTS_WEIGHT);
+    	
+    	//Skalowanie od 0-10 i zaokrąglanie
+    	return (int) Math.round(score * 10);
+    }
+    
     // Oznacz zadanie jako ukończone - DTO version
-    public UserTaskDTO completeTask(Integer userId, Integer taskId, Integer score) {
+    public UserTaskDTO completeTask(Integer userId, Integer taskId, Integer timeSpentMinutes, Integer attempts) {
         Optional<UserTask> userTaskOpt = userTaskRepository.findByUser_IdUserAndTask_IdTask(userId, taskId);
         
         if (userTaskOpt.isPresent()) {
             UserTask userTask = userTaskOpt.get();
             userTask.setStatus("COMPLETED");
             userTask.setCompletionDate(LocalDateTime.now());
-            userTask.setScore(score != null ? score : 0);
+            
+            //oblicz wynik automatyczne
+            Integer score = calculateScore(timeSpentMinutes, attempts);
+            userTask.setScore(score);
             
             UserTask saved = userTaskRepository.save(userTask);
             return mapToDTO(saved);
@@ -264,4 +309,5 @@ public class UserTaskService {
         UserTask saved = userTaskRepository.save(userTask);
         return mapToDTO(saved);
     }
+    
 }

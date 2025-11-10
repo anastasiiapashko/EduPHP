@@ -65,11 +65,17 @@ public class UserTaskController {
     public ResponseEntity<?> completeTask(
             @PathVariable Integer userId,
             @PathVariable Integer taskId,
-            @RequestBody Map<String, Integer> request) {
+            @RequestBody Map<String, Object> request) {
         
         try {
-            Integer score = request.get("score");
-            UserTaskDTO userTaskDTO = userTaskService.completeTask(userId, taskId, score);
+            Integer timeSpentMinutes = (Integer) request.get("timeSpentMinutes");
+            Integer attempts = (Integer) request.get("attempts");
+            
+            if(timeSpentMinutes == null || attempts == null) {
+            	return ResponseEntity.badRequest().body(Map.of("error", "Czas i liczba prób są wymagane"));
+            }
+            
+            UserTaskDTO userTaskDTO = userTaskService.completeTask(userId, taskId, timeSpentMinutes, attempts);
             return ResponseEntity.ok(userTaskDTO);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
