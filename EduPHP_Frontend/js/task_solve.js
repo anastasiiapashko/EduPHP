@@ -121,7 +121,7 @@ class TaskSolver {
         const resetBtn = document.getElementById('resetSolutionBtn');
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
-                this.resetSolution();
+                this.resetTaskProgress();
             });
         }
 
@@ -229,8 +229,8 @@ async submitSolution() {
     try {
         console.log('🟡 Rozpoczynanie przesyłania rozwiązania...');
         
-        // 1. Najpierw zapisz rozwiązanie
-        const saveResponse = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/solution`, {
+        // 1. Najpierw zapisz rozwiązanie (BEZ zwiększania prób)
+        const saveResponse = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/save-only`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -247,9 +247,9 @@ async submitSolution() {
             throw new Error('Błąd podczas zapisywania rozwiązania: ' + saveError);
         }
 
-        // 2. Oblicz wynik na podstawie czasu i prób
+        // 2. Oblicz wynik na podstawie czasu i prób (NIE zwiększamy prób!)
         const timeSpent = this.calculateTimeSpent();
-        const attempts = this.userTaskData ? this.userTaskData.attempts + 1 : 1;
+        const attempts = this.userTaskData ? this.userTaskData.attempts : 0; // Używamy aktualnej liczby prób
         const score = this.scoreCalculator.calculateScore(timeSpent, attempts);
 
         console.log('📊 Obliczone dane:', {
@@ -262,7 +262,7 @@ async submitSolution() {
         // 3. Przygotuj dane do wysłania
         const completeData = { 
             timeSpentMinutes: timeSpent,
-            attempts: attempts
+            attempts: attempts // Używamy aktualnej liczby prób, NIE zwiększamy
         };
 
         console.log('📨 Wysyłane dane:', completeData);
@@ -367,30 +367,77 @@ async submitSolution() {
     }
 
     updateButtons() {
+        if (!this.userTaskData) return;
+        
         const isCompleted = this.userTaskData.status === 'COMPLETED';
         const submitBtn = document.getElementById('submitSolutionBtn');
         
-        if (submitBtn && isCompleted) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-check"></i> Ukończone';
-            submitBtn.title = 'To zadanie zostało już ukończone';
+        if (submitBtn) {
+            if (isCompleted) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-check"></i> Ukończone';
+                submitBtn.title = 'To zadanie zostało już ukończone';
+                submitBtn.classList.add('completed'); // Możesz dodać klasę CSS dla stylowania
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-flag-checkered"></i> Skończyłem';
+                submitBtn.title = 'Prześlij rozwiązanie do oceny';
+                submitBtn.classList.remove('completed'); // Usuń klasę jeśli była
+            }
         }
     }
-
     
     async resetTaskProgress() {
+        if (!confirm('Czy na pewno chcesz zresetować postęp tego zadania? Wszystkie zapisane dane zostaną utracone.')) {
+            return;
+        }
+        
         try {
             const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/reset`, {
-                method: 'PUT'
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include'
             });
 
+            console.log('🔄 Status resetowania:', response.status);
+            
             if (response.ok) {
-                showGlobalError('🔄 Postęp zadania zresetowany', 'success');
-                await this.loadUserTaskData();
+                // ODCZYTUJ ODPOWIEDŹ z backendu - to kluczowe!
+                const resetData = await response.json();
+                console.log('📊 Dane po resecie z backendu:', resetData);
+                
+                // BEZPOŚREDNIO zaktualizuj dane z odpowiedzi backendu
+                this.userTaskData = {
+                    status: resetData.status || 'NOT_STARTED',
+                    attempts: resetData.attempts || 0,
+                    userSolution: resetData.userSolution || '',
+                    score: resetData.score || 0,
+                    startDate: resetData.startDate,
+                    completionDate: resetData.completionDate,
+                    userId: resetData.userId,
+                    taskId: resetData.taskId
+                };
+                
+                showGlobalError('🔄 Postęp zadania zresetowany pomyślnie!', 'success');
+                
+                // Wyczyść edytor
+                this.phpCompiler.setEditorContent('<?php\n// Napisz swoje rozwiązanie tutaj\n?>');
+                
+                // Odśwież UI - TERAZ z poprawnymi danymi
                 this.updateUI();
+                
+                console.log('✅ Zadanie zresetowane, status:', this.userTaskData.status);
+                
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Błąd HTTP: ${response.status}`);
             }
+            
         } catch (error) {
-            console.error('Błąd podczas resetowania zadania:', error);
+            console.error('💥 Błąd resetowania zadania:', error);
+            showGlobalError(`❌ Nie udało się zresetować zadania: ${error.message}`, 'error');
         }
     }
 

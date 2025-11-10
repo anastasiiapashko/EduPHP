@@ -107,7 +107,6 @@ public class UserTaskService {
         if (userTaskOpt.isPresent()) {
             UserTask userTask = userTaskOpt.get();
             userTask.setUserSolution(solution);
-            userTask.setAttempts(userTask.getAttempts() + 1);
             
             // Automatycznie zmień status jeśli był NOT_STARTED
             if ("NOT_STARTED".equals(userTask.getStatus())) {
@@ -120,7 +119,24 @@ public class UserTaskService {
         throw new IllegalArgumentException("Nie znaleziono zadania dla użytkownika. Najpierw rozpocznij zadanie.");
     }
 
-    
+ // Tylko zwiększ liczbę prób BEZ zapisywania rozwiązania - DTO version
+    public UserTaskDTO incrementAttemptOnly(Integer userId, Integer taskId) {
+        Optional<UserTask> userTaskOpt = userTaskRepository.findByUser_IdUserAndTask_IdTask(userId, taskId);
+        
+        if (userTaskOpt.isPresent()) {
+            UserTask userTask = userTaskOpt.get();
+            userTask.setAttempts(userTask.getAttempts() + 1); // TUTAJ zwiększamy próby!
+            
+            // Automatycznie zmień status jeśli był NOT_STARTED
+            if ("NOT_STARTED".equals(userTask.getStatus())) {
+                userTask.setStatus("IN_PROGRESS");
+            }
+            
+            UserTask saved = userTaskRepository.save(userTask);
+            return mapToDTO(saved);
+        }
+        throw new IllegalArgumentException("Nie znaleziono zadania dla użytkownika. Najpierw rozpocznij zadanie.");
+    } 
     public Integer calculateScore(Integer timeSpentMinutes, Integer attempts) {
     	if(timeSpentMinutes == null || attempts == null) {
     		return 0;
@@ -304,7 +320,6 @@ public class UserTaskService {
         userTask.setStatus("COMPLETED");
         userTask.setCompletionDate(LocalDateTime.now());
         userTask.setScore(0); // ZAWSZE 0 punktów za użycie pomocy
-        userTask.setUserSolution("UŻYTO POMOC - " + LocalDateTime.now()); // Oznaczenie
         
         UserTask saved = userTaskRepository.save(userTask);
         return mapToDTO(saved);

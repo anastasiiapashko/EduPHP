@@ -19,7 +19,7 @@ class PHPCompiler {
     setupEventListeners() {
         const editor = document.getElementById('codeEditor');
         const testBtn = document.getElementById('testCodeBtn');
-        const executeBtn = document.getElementById('executeCodeBtn');
+        const executeBtn = document.getElementById('saveCodeBtn');
         const tabBtns = document.querySelectorAll('.tab-btn');
         
         if (editor) {
@@ -41,7 +41,7 @@ class PHPCompiler {
         }
         
         if (executeBtn) {
-            executeBtn.addEventListener('click', () => this.executeAndSaveCode());
+            executeBtn.addEventListener('click', () => this.saveCode());
         }
         
         tabBtns.forEach(btn => {
@@ -50,20 +50,23 @@ class PHPCompiler {
     }
     
     async loadLastSolution() {
-        try {
-            const response = await fetch(`http://localhost:8082/api/php/solution/${this.userId}/${this.taskId}`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.code) {
-                    this.currentCode = data.code;
-                    this.setEditorContent(data.code);
-                    console.log('✅ Załadowano ostatnie rozwiązanie');
-                }
+    try {
+        // UŻYJ ENDPOINTU KTÓRY JUŻ MASZ - pobierz dane user-task
+        const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}`);
+        if (response.ok) {
+            const userTaskData = await response.json();
+            if (userTaskData.userSolution) {
+                this.currentCode = userTaskData.userSolution;
+                this.setEditorContent(userTaskData.userSolution);
+                console.log('✅ Załadowano zapisane rozwiązanie użytkownika');
+            } else {
+                console.log('ℹ️ Brak zapisanego rozwiązania, używam pustego edytora');
             }
-        } catch (error) {
-            console.error('Błąd ładowania rozwiązania:', error);
         }
+    } catch (error) {
+        console.error('Błąd ładowania rozwiązania:', error);
     }
+}
     
     setEditorContent(code) {
         const editor = document.getElementById('codeEditor');
@@ -124,6 +127,9 @@ class PHPCompiler {
             const result = await response.json();
             this.displayExecutionResult(result, 'test');
             
+            // DODAJ TE LINIJKI - odśwież dane użytkownika po teście
+            await this.refreshUserTaskData();
+
             if (result.success) {
                 showGlobalError('✅ Test zakończony pomyślnie', 'success');
             } else {
@@ -136,54 +142,62 @@ class PHPCompiler {
         }
     }
     
-    async executeAndSaveCode() {
-    const code = this.getCurrentCode();
-    if (!code.trim()) {
-        showGlobalError('❌ Wpisz kod PHP do wykonania', 'error');
-        return;
+    // DODAJ NOWĄ METODĘ do odświeżania danych
+    async refreshUserTaskData() {
+        try {
+            // Wywołaj metodę z TaskSolver aby odświeżyć UI
+            if (window.taskSolver && typeof window.taskSolver.loadUserTaskData === 'function') {
+                await window.taskSolver.loadUserTaskData();
+                await window.taskSolver.updateUI();
+                console.log('🔄 Dane użytkownika odświeżone');
+            }
+        } catch (error) {
+            console.error('Błąd odświeżania danych:', error);
+        }
+    }
+    async saveCode() {
+        const code = this.getCurrentCode();
+        if (!code.trim()) {
+            showGlobalError('❌ Wpisz kod PHP do zapisania', 'error');
+            return;
+        }
+        
+        try {
+            // Upewnij się, że zadanie jest rozpoczęte
+            await this.ensureTaskStarted();
+            
+            // Tylko zapisz rozwiązanie bez wykonywania
+            const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/save-only`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ solution: code })
+            });
+            
+            if (response.ok) {
+                showGlobalError('✅ Kod zapisany pomyślnie!', 'success');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Błąd podczas zapisywania kodu');
+            }
+            
+        } catch (error) {
+            console.error('Błąd zapisywania kodu:', error);
+            showGlobalError(`❌ Błąd podczas zapisywania kodu: ${error.message}`, 'error');
+        }
     }
     
-    try {
-        // Najpierw upewnij się, że zadanie jest rozpoczęte
-        await this.ensureTaskStarted();
-        
-        const response = await fetch(`http://localhost:8082/api/php/execute/${this.userId}/${this.taskId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: code })
-        });
-        
-        const result = await response.json();
-        this.displayExecutionResult(result, 'execute');
-        
-        if (result.success && result.saved) {
-            showGlobalError('✅ Kod wykonany i zapisany pomyślnie!', 'success');
-        } else if (result.success) {
-            showGlobalError('✅ Kod wykonany pomyślnie!', 'success');
-        } else {
-            showGlobalError('⚠️ Kod wykonany z błędami', 'warning');
+    async ensureTaskStarted() {
+        try {
+            const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}`);
+            if (!response.ok) {
+                await fetch(`http://localhost:8082/api/user-task/${this.userId}/start/${this.taskId}`, {
+                    method: 'POST'
+                });
+            }
+        } catch (error) {
+            console.error('Błąd podczas rozpoczynania zadania:', error);
         }
-        
-    } catch (error) {
-        console.error('Błąd wykonania kodu:', error);
-        showGlobalError('❌ Błąd podczas wykonywania kodu', 'error');
     }
-}
-
-async ensureTaskStarted() {
-    try {
-        // Sprawdź status zadania
-        const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}`);
-        if (!response.ok) {
-            // Jeśli zadanie nie istnieje, rozpocznij je
-            await fetch(`http://localhost:8082/api/user-task/${this.userId}/start/${this.taskId}`, {
-                method: 'POST'
-            });
-        }
-    } catch (error) {
-        console.error('Błąd podczas rozpoczynania zadania:', error);
-    }
-}
     
     displayExecutionResult(result, actionType = 'test') {
         const outputElement = document.getElementById('compilerOutput');

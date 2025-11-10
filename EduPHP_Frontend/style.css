@@ -5,7 +5,7 @@ html {
 
 :root {
   --primary-color: #6a5acd;
-  --secondary-color: #9370db;
+  --secondary-color: #efecf5;
   --text-color: #333;
   --bg-color: #f5f7fa;
   --header-bg: #fff;
@@ -2025,7 +2025,7 @@ footer {
 .task-course {
     display: inline-block;
     background: var(--nav-hover);
-    color: var(--primary-color);
+    color: #eee;
     padding: 0.3rem 0.8rem;
     border-radius: 20px;
     font-size: 0.85rem;

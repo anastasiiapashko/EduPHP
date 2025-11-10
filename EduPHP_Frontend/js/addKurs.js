@@ -162,11 +162,8 @@ function validateCourseForm() {
         isValid = false;
     }
 
-    if (!youtubeLink) {
-        showFieldError('youtubeLink', 'Link do YouTube jest wymagany');
-        isValid = false;
-    } else if (!isValidYouTubeLink(youtubeLink)) {
-        showFieldError('youtubeLink', 'Podaj poprawny link YouTube');
+    if (youtubeLink && !isValidYouTubeLink(youtubeLink)) {
+        showFieldError('youtubeLink', 'Podaj poprawny link YouTube lub pozostaw puste');
         isValid = false;
     }
 
@@ -175,6 +172,8 @@ function validateCourseForm() {
 
 // Funkcja sprawdzająca poprawność linku YouTube
 function isValidYouTubeLink(url) {
+    if (!url) return true; // Pusty link jest teraz poprawny
+    
     const patterns = [
         /^https?:\/\/(www\.)?youtube\.com\/watch\?v=[\w-]+/,
         /^https?:\/\/(www\.)?youtu\.be\/[\w-]+/,

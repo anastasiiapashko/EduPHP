@@ -41,8 +41,9 @@ public class UserTaskController {
     }
 
     // Zapisz rozwiązanie
-    @PutMapping("/{userId}/task/{taskId}/solution")
-    public ResponseEntity<?> saveSolution(
+ // Tylko zapisz rozwiązanie BEZ zwiększania prób
+    @PutMapping("/{userId}/task/{taskId}/save-only")
+    public ResponseEntity<?> saveSolutionOnly(
             @PathVariable Integer userId,
             @PathVariable Integer taskId,
             @RequestBody Map<String, String> request) {
