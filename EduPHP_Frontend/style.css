@@ -624,37 +624,7 @@ footer {
   box-shadow: 0 5px 15px rgba(100, 149, 237, 0.3);
 }
 
-/* Lista aktywności */
-.recent-activity {
-  margin-top: 2rem;
-}
 
-.activity-list {
-  margin-top: 1rem;
-}
-
-.activity-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.activity-item:last-child {
-  border-bottom: none;
-}
-
-.activity-item i {
-  color: var(--primary-color);
-  width: 20px;
-}
-
-.activity-item small {
-  margin-left: auto;
-  color: #888;
-  font-size: 0.8rem;
-}
 
 /* Karta powitalna */
 .welcome-card {
@@ -1754,33 +1724,6 @@ footer {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(106, 90, 205, 0.2);
-}
-
-/* Statystyki */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1rem;
-}
-
-.stat-item {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    color: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.stat-value {
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-}
-
-.stat-label {
-    font-size: 0.9rem;
-    opacity: 0.9;
 }
 
 /* Nagłówek listy */
@@ -3536,7 +3479,7 @@ footer {
 .stat-value {
     font-size: 2.5rem;
     font-weight: bold;
-    color: var(--primary-color);
+    color: #e0e0e0;
     line-height: 1;
     margin-bottom: 0.5rem;
 }
@@ -3788,3 +3731,321 @@ footer {
     background: #2d2d2d;
 }
 
+/* Stylowanie karty aktywności */
+.recent-activity {
+    margin-top: 2rem;
+}
+
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.activity-header h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+}
+
+.btn-refresh {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.btn-refresh:hover {
+    background: var(--primary-dark);
+}
+
+.btn-refresh:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Stylowanie karty aktywności - KOMPAKTOWA WERSJA */
+.recent-activity {
+    margin-top: 2rem;
+}
+
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.activity-header h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+}
+
+.btn-refresh {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color 0.2s;
+}
+
+.btn-refresh:hover {
+    background: var(--primary-dark);
+}
+
+/* Przewijana lista aktywności */
+.activity-list-container {
+    max-height: 300px; /* Ogranicz wysokość */
+    overflow-y: auto; /* Włącz przewijanie pionowe */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* Mniejszy odstęp między elementami */
+}
+
+/* Kompaktowe elementy aktywności */
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--card-bg);
+    border-radius: 6px;
+    border-left: 3px solid var(--primary-color);
+    transition: background-color 0.2s;
+    font-size: 0.9rem;
+}
+
+.activity-item:hover {
+    background: var(--hover-color);
+    transform: none; /* Usuwamy transform na hover */
+    box-shadow: none; /* Usuwamy shadow na hover */
+}
+
+.activity-item[data-activity-type="task_completed"] {
+    border-left-color: #2ed573;
+}
+
+.activity-item[data-activity-type="course_completed"] {
+    border-left-color: #ff9f43;
+}
+
+.activity-item[data-activity-type="task_started"] {
+    border-left-color: #3498db;
+}
+
+.activity-icon {
+    font-size: 1rem;
+    margin-top: 0.1rem;
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.activity-item[data-activity-type="task_completed"] .activity-icon {
+    color: #2ed573;
+}
+
+.activity-item[data-activity-type="course_completed"] .activity-icon {
+    color: #ff9f43;
+}
+
+.activity-content {
+    flex: 1;
+    min-width: 0; /* Zapobiega przepełnieniu */
+}
+
+.activity-text {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.2rem;
+}
+
+.activity-text span {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+/* Mniejsze badge'y */
+.activity-score {
+    padding: 0.15rem 0.4rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+}
+
+.score-10 { background: #2ed573; }
+.score-9 { background: #2ed573; }
+.score-8 { background: #7bed9f; }
+.score-7 { background: #ffa502; }
+.score-6 { background: #ffa502; }
+.score-5 { background: #ff7f50; }
+.score-4 { background: #ff6348; }
+.score-3 { background: #ff4757; }
+.score-2 { background: #ff4757; }
+.score-1 { background: #ff4757; }
+.score-0 { background: #a4b0be; }
+
+.activity-difficulty {
+    padding: 0.15rem 0.4rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+}
+
+.task-difficulty-łatwy { background: #2ed573; }
+.task-difficulty-średni { background: #ffa502; }
+.task-difficulty-łatwy { background: #ff4757; }
+
+.activity-time {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+/* Pasek przewijania - stylowanie dla Webkit (Chrome, Safari) */
+.activity-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.activity-list-container::-webkit-scrollbar-track {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.activity-list-container::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 3px;
+}
+
+.activity-list-container::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* Stany ładowania i błędu - kompaktowe */
+.activity-loading {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.loader-spinner {
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid var(--border-color);
+    border-top: 2px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 0.75rem;
+}
+
+.activity-empty {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    color: var(--text-secondary);
+}
+
+.activity-empty i {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--border-color);
+}
+
+.activity-empty h3 {
+    margin: 0 0 0.4rem;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.activity-empty p {
+    margin: 0;
+    font-size: 0.85rem;
+}
+
+.activity-error {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--error-color);
+}
+
+.activity-error i {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.activity-error p {
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+}
+
+.btn-retry {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.btn-retry:hover {
+    background: var(--primary-dark);
+}
+
+/* Responsywność */
+@media (max-width: 768px) {
+    .activity-header {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+    
+    .activity-text {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+    
+    .activity-item {
+        padding: 0.6rem;
+        gap: 0.6rem;
+    }
+    
+    .activity-list-container {
+        max-height: 250px;
+    }
+}
+
+/* Dla bardzo małych ekranów */
+@media (max-width: 480px) {
+    .activity-list-container {
+        max-height: 200px;
+    }
+    
+    .activity-item {
+        font-size: 0.85rem;
+    }
+    
+    .activity-text span {
+        font-size: 0.85rem;
+    }
+}
