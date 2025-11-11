@@ -18,6 +18,9 @@ public class UserComplainService {
 	@Autowired
 	private UserComplainRepository applicationRepository;
 	
+	@Autowired
+	private AnswerService answerService;
+	
 	public List<UserComplain> getAllApplications(){
 		return applicationRepository.findAllByOrderByDatePublishDesc();
 	}
@@ -66,5 +69,12 @@ public class UserComplainService {
             dto.setUserLogin(app.getUser().getLogin()); // ← tylko login, bez reszty
         }
         return dto;
+    }
+    
+    public void deleteApplicationWithAnswers(Integer id) {
+        // Najpierw usuń wszystkie odpowiedzi
+        answerService.deleteAnswersByComplainId(id);
+        // Potem usuń zgłoszenie
+        deleteApplication(id);
     }
 }

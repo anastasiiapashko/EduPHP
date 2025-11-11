@@ -6,6 +6,7 @@ const applicationsPerPage = 10;
 let currentFilter = 'all';
 let currentSearch = '';
 let currentSort = 'newest';
+let answers = [];
 
 export function setupApplicationsPage() {
     const applicationsList = document.getElementById('applicationsList');
@@ -151,7 +152,6 @@ function createApplicationCard(application) {
         minute: '2-digit'
     });
 
-    //ten fragment używa dynamicznych danych
     return `
         <div class="application-card" data-app-id="${application.idApp}">
             <div class="application-card-header">
@@ -176,7 +176,11 @@ function createApplicationCard(application) {
             </div>
             <div class="application-preview">
                 <div class="application-full-content" id="full-content-${application.idApp}">
-                    <div class="application-full-description">${application.opis}</div>
+                     <div class="application-full-description">${autoDetectAndFormatCode(application.opis)}</div>
+                    
+                    <!-- Sekcja odpowiedzi -->
+                    ${createAnswersSection(application.idApp, isMyApplication)}
+                    
                     ${isMyApplication ? `
                         <div class="application-actions">
                             <button class="btn-edit" onclick="editApplication(${application.idApp})">
@@ -330,3 +334,277 @@ window.deleteApplication = async function(id) {
         alert('Wystąpił błąd podczas usuwania zgłoszenia.');
     }
 };
+
+export async function loadAnswers(complainId) {
+    try {
+        const response = await fetch(`http://localhost:8082/api/answers/complain/${complainId}`, {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            return await response.json();
+        } else {
+            console.error('Błąd podczas ładowania odpowiedzi');
+            return [];
+        }
+    } catch (error) {
+        console.error('Błąd:', error);
+        return [];
+    }
+}
+
+export async function addAnswer(complainId, content) {
+    try {
+        const userId = getCurrentUserId();
+        const response = await fetch(`http://localhost:8082/api/answers/complain/${complainId}/user/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ content }),
+            credentials: 'include'
+        });
+        
+        return response.ok;
+    } catch (error) {
+        console.error('Błąd:', error);
+        return false;
+    }
+}
+
+export async function deleteAnswer(answerId) {
+    try {
+        const response = await fetch(`http://localhost:8082/api/answers/${answerId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        return response.ok;
+    } catch (error) {
+        console.error('Błąd:', error);
+        return false;
+    }
+}
+
+export async function updateAnswer(answerId, content) {
+    try {
+        const response = await fetch(`http://localhost:8082/api/answers/${answerId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ content }),
+            credentials: 'include'
+        });
+        
+        return response.ok;
+    } catch (error) {
+        console.error('Błąd:', error);
+        return false;
+    }
+}
+
+// Funkcja do tworzenia interfejsu komentarzy
+function createAnswersSection(complainId, isMyApplication) {
+    return `
+        <div class="answers-section" data-complain-id="${complainId}">
+            <div class="answers-header">
+                <h4><i class="fas fa-comments"></i> Odpowiedzi</h4>
+                <button class="btn-toggle-answers" onclick="toggleAnswers(${complainId})">
+                    <i class="fas fa-chevron-down"></i>
+                    <span>Pokaż odpowiedzi</span>
+                </button>
+            </div>
+            <div class="answers-container" id="answers-${complainId}" style="display: none;">
+                <div class="answers-list" id="answers-list-${complainId}">
+                    <div class="loader">Ładowanie odpowiedzi...</div>
+                </div>
+                <div class="answer-form">
+                    <textarea 
+                        id="answer-input-${complainId}" 
+                        placeholder="Dodaj odpowiedź..." 
+                        rows="3"
+                    ></textarea>
+                    <button class="btn-submit-answer" onclick="submitAnswer(${complainId})">
+                        <i class="fas fa-paper-plane"></i> Wyślij odpowiedź
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Globalne funkcje do obsługi odpowiedzi
+window.toggleAnswers = async function(complainId) {
+    const container = document.getElementById(`answers-${complainId}`);
+    const button = document.querySelector(`[onclick="toggleAnswers(${complainId})"]`);
+    const icon = button.querySelector('i');
+    const text = button.querySelector('span');
+    
+    if (container.style.display === 'none') {
+        // Pokaż i załaduj odpowiedzi
+        container.style.display = 'block';
+        icon.className = 'fas fa-chevron-up';
+        text.textContent = 'Ukryj odpowiedzi';
+        
+        await loadAndDisplayAnswers(complainId);
+    } else {
+        // Ukryj odpowiedzi
+        container.style.display = 'none';
+        icon.className = 'fas fa-chevron-down';
+        text.textContent = 'Pokaż odpowiedzi';
+    }
+}
+
+window.submitAnswer = async function(complainId) {
+    const input = document.getElementById(`answer-input-${complainId}`);
+    const content = input.value.trim();
+    
+    if (!content) {
+        alert('Proszę wpisać odpowiedź');
+        return;
+    }
+    
+    const success = await addAnswer(complainId, content);
+    
+    if (success) {
+        input.value = '';
+        await loadAndDisplayAnswers(complainId); // Odśwież listę
+    } else {
+        alert('Błąd podczas dodawania odpowiedzi');
+    }
+}
+
+async function loadAndDisplayAnswers(complainId) {
+    const answersList = document.getElementById(`answers-list-${complainId}`);
+    answersList.innerHTML = '<div class="loader">Ładowanie odpowiedzi...</div>';
+    
+    answers = await loadAnswers(complainId); // ZAPISZ DO GLOBALNEJ ZMIENNEJ
+    
+    if (answers.length === 0) {
+        answersList.innerHTML = '<div class="empty-state">Brak odpowiedzi</div>';
+        return;
+    }
+    
+    answersList.innerHTML = answers.map(answer => `
+        <div class="answer-item" data-answer-id="${answer.idAnswer}">
+            <div class="answer-header">
+                <span class="answer-author">${answer.userName}</span>
+                <span class="answer-date">
+                    ${new Date(answer.dateCreated).toLocaleDateString('pl-PL', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })}
+                </span>
+            </div>
+            <div class="answer-content">${autoDetectAndFormatCode(answer.content)}</div> <!-- DODAJ FORMATOWANIE -->
+            ${answer.userId === getCurrentUserId() ? `
+                <div class="answer-actions">
+                    <button class="btn-edit-sm" onclick="editAnswer(${answer.idAnswer})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-delete-sm" onclick="deleteAnswerConfirm(${answer.idAnswer})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+window.editAnswer = function(answerId) {
+    const answerItem = document.querySelector(`[data-answer-id="${answerId}"]`);
+    const contentDiv = answerItem.querySelector('.answer-content');
+    
+    // Pobierz oryginalną treść z globalnej zmiennej answers
+    const originalAnswer = answers.find(a => a.idAnswer === answerId);
+    const currentContent = originalAnswer ? originalAnswer.content : contentDiv.textContent;
+    
+    contentDiv.innerHTML = `
+        <textarea class="edit-answer-input" style="width: 100%; min-height: 100px; padding: 0.8rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--card-bg); color: var(--text-color);">${currentContent}</textarea>
+        <div class="edit-actions">
+            <button class="btn-primary btn-sm" onclick="saveAnswerEdit(${answerId})">Zapisz</button>
+            <button class="btn-secondary btn-sm" onclick="cancelAnswerEdit(${answerId})">Anuluj</button>
+        </div>
+    `;
+}
+
+window.saveAnswerEdit = async function(answerId) {
+    const answerItem = document.querySelector(`[data-answer-id="${answerId}"]`);
+    const textarea = answerItem.querySelector('.edit-answer-input');
+    const newContent = textarea.value.trim();
+    
+    if (!newContent) {
+        alert('Odpowiedź nie może być pusta');
+        return;
+    }
+    
+    const success = await updateAnswer(answerId, newContent);
+    
+    if (success) {
+        // Odśwież listę odpowiedzi
+        const complainId = answerItem.closest('.answers-section').dataset.complainId;
+        await loadAndDisplayAnswers(complainId);
+    } else {
+        alert('Błąd podczas aktualizacji odpowiedzi');
+    }
+}
+
+window.cancelAnswerEdit = function(answerId) {
+    const answerItem = document.querySelector(`[data-answer-id="${answerId}"]`);
+    const complainId = answerItem.closest('.answers-section').dataset.complainId;
+    loadAndDisplayAnswers(complainId); // Odśwież bez zapisywania
+}
+
+window.deleteAnswerConfirm = function(answerId) {
+    if (confirm('Czy na pewno chcesz usunąć tę odpowiedź?')) {
+        deleteAnswer(answerId).then(success => {
+            if (success) {
+                // Odśwież listę odpowiedzi
+                const answerItem = document.querySelector(`[data-answer-id="${answerId}"]`);
+                const complainId = answerItem.closest('.answers-section').dataset.complainId;
+                loadAndDisplayAnswers(complainId);
+            } else {
+                alert('Błąd podczas usuwania odpowiedzi');
+            }
+        });
+    }
+}
+
+function autoDetectAndFormatCode(content) {
+    if (!content) return '';
+    
+    // Escapowanie HTML dla bezpieczeństwa
+    let safeContent = content
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+    // 1. Wykrywanie bloków kodu PHP (różne warianty)
+    safeContent = safeContent.replace(
+        /(&lt;\/?(php\?|php|\?)(&gt;)?)([\s\S]*?)(\?&gt;)/gi,
+        '<pre><code class="language-php">$1$4$5</code></pre>'
+    );
+
+    // 2. Wykrywanie bloków kodu z ``` (Markdown)
+    safeContent = safeContent.replace(
+        /```(\w+)?\n?([\s\S]*?)```/g,
+        '<pre><code class="language-$1">$2</code></pre>'
+    );
+
+    // 3. Wykrywanie pojedynczych linii kodu z `
+    safeContent = safeContent.replace(
+        /`([^`]+)`/g,
+        '<code class="inline-code">$1</code>'
+    );
+
+    // 4. Zamiana zwykłych enterów na <br> dla tekstu poza kodem
+    safeContent = safeContent.replace(/\n/g, '<br>');
+
+    return safeContent;
+}
