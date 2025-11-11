@@ -72,16 +72,28 @@
             </div>
         </div>
 
+        <!-- Ulepszona karta ostatniej aktywności -->
         <div class="card recent-activity">
-            <h2>Ostatnia aktywność</h2>
-            <div class="activity-list" id="activityList">
-                <div class="activity-item">
-                    <i class="fas fa-check-circle"></i>
-                    <span>Zalogowano pomyślnie</span>
-                    <small>teraz</small>
-                </div>
-                <!-- Tutaj będą dynamicznie dodawane aktywności -->
+            <div class="activity-header">
+                <h2><i class="fas fa-history"></i> Ostatnia aktywność</h2>
+                <button class="btn-refresh" id="refreshActivity">
+                    <i class="fas fa-sync-alt"></i> Odśwież
+                </button>
             </div>
+            
+            <div class="activity-list" id="activityList">
+                <div class="activity-loading">
+                    <div class="loader-spinner"></div>
+                    <p>Ładowanie aktywności...</p>
+                </div>
+            </div>
+            
+            <div class="activity-empty" id="activityEmpty" style="display: none;">
+                <i class="fas fa-inbox"></i>
+                <h3>Brak aktywności</h3>
+                <p>Rozpocznij naukę, aby zobaczyć tutaj swoje osiągnięcia!</p>
+            </div>
+        </div>
         </div>
     </main>
 

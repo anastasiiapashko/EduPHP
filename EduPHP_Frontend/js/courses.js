@@ -81,17 +81,7 @@ function renderCoursesList() {
             <div class="course-item ${isCompleted ? 'completed' : ''}" data-course-id="${course.idKursu}">
                 <div class="course-header">
                     <h3>${course.tytul}</h3>
-                    <div class="course-actions">
-                        <label class="completion-toggle">
-                            <input type="checkbox" ${isCompleted ? 'checked' : ''} 
-                                onchange="toggleCourseCompletion(${course.idKursu}, this.checked)">
-                            <span class="checkmark"></span>
-                            <span class="toggle-label">${isCompleted ? 'Ukończony' : 'Oznacz jako ukończony'}</span>
-                        </label>
-                        <button class="toggle-details-btn" onclick="toggleCourseDetails(${course.idKursu})">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                    </div>
+                    <!-- MIEJSCE NA PROGRES - progress_courses.js doda tutaj pasek progresu -->
                 </div>
                 
                 <div class="course-details" id="details-${course.idKursu}">
@@ -115,6 +105,16 @@ function renderCoursesList() {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="course-actions">
+                    <a href="tasks.html?course=${course.idKursu}" class="btn-start">
+                        <i class="fas fa-tasks"></i> Przejdź do zadań
+                    </a>
+                    
+                    <button class="toggle-details-btn" onclick="toggleCourseDetails(${course.idKursu})">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
                 </div>
             </div>
         `;

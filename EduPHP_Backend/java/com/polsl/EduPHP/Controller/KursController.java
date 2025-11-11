@@ -110,4 +110,49 @@ public class KursController {
     public ResponseEntity<?> handleOptions() {
         return ResponseEntity.ok().build();
     }
+   
+    @GetMapping("/{kursId}/user/{userId}/progress")
+    public ResponseEntity<Double> getProgressUkonczenia(
+            @PathVariable Integer kursId,
+            @PathVariable Integer userId) {
+        
+        try {
+            System.out.println("=== ENDPOINT CALLED: /api/kurs/" + kursId + "/user/" + userId + "/progress ===");
+            Double progress = kursService.getProgressUkonczenia(userId, kursId);
+            System.out.println("Zwracam progres: " + progress);
+            return ResponseEntity.ok(progress);
+        } catch (Exception e) {
+            System.err.println("!!! BŁĄD W ENDPOINT /progress !!!");
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(0.0);
+        }
+    }
+
+    @GetMapping("/user/{userId}/overall-progress")
+    public ResponseEntity<Double> getOverallProgress(@PathVariable Integer userId) {
+        try {
+            System.out.println("=== ENDPOINT CALLED: /api/kurs/user/" + userId + "/overall-progress ===");
+            Double progress = kursService.getOverallProgress(userId);
+            System.out.println("Zwracam ogólny progres: " + progress);
+            return ResponseEntity.ok(progress);
+        } catch (Exception e) {
+            System.err.println("!!! BŁĄD W ENDPOINT /overall-progress !!!");
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(0.0);
+        }
+    }
+
+    @GetMapping("/user/{userId}/completed-count")
+    public ResponseEntity<Long> getCompletedCoursesCount(@PathVariable Integer userId) {
+        try {
+            System.out.println("=== ENDPOINT CALLED: /api/kurs/user/" + userId + "/completed-count ===");
+            Long count = kursService.getCompletedCoursesCount(userId);
+            System.out.println("Zwracam liczbę ukończonych kursów: " + count);
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            System.err.println("!!! BŁĄD W ENDPOINT /completed-count !!!");
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(0L);
+        }
+    }
 }

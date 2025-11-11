@@ -16,6 +16,7 @@ import { setupTaskSolvePage } from './task_solve.js';
 import { setupAdminUsersPage } from './admin_users.js';
 import { setupSolutionManagement } from './addSolution.js';
 import { setupStatisticsPage } from './statistics.js';
+import { setupProgressCoursesPage } from './progress_courses.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     try {
@@ -62,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setupAdminPermissions();
             setupCourseCreation();
             setupCourses();
+            setupProgressCoursesPage();
             setupApplicationForm();
             setupApplicationsPage();
             setupTasksPage();

@@ -1159,178 +1159,286 @@ footer {
 
 /* Lista kursów */
 .courses-list {
-  margin-top: 1.5rem;
+    margin-top: 2rem;
 }
 
 .course-item {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  overflow: hidden;
-  transition: all 0.3s ease;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .course-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary-color);
 }
 
 .course-item.expanded {
-  border-color: var(--primary-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 20px rgba(106, 90, 205, 0.2);
 }
 
 .course-item.completed {
-  border-left: 4px solid #2ecc71;
+    border-left: 4px solid #2ecc71;
+    background: linear-gradient(135deg, var(--card-bg) 0%, rgba(46, 204, 113, 0.05) 100%);
 }
 
 .course-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  cursor: pointer;
-  background: var(--card-bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    cursor: pointer;
+    background: var(--card-bg);
+    transition: background-color 0.3s ease;
+}
+
+.course-header:hover {
+    background-color: rgba(106, 90, 205, 0.03);
 }
 
 .course-header h3 {
-  margin: 0;
-  color: var(--primary-color);
-  font-size: 1.2rem;
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.3rem;
+    font-weight: 600;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.course-header h3::before {
+    font-size: 1.2em;
 }
 
 .course-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    flex-wrap: wrap;
 }
 
-/* Toggle do oznaczania ukończenia */
-.completion-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  user-select: none;
+/* Przycisk rozpoczęcia zadań */
+.btn-start {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.2rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(106, 90, 205, 0.3);
 }
 
-.completion-toggle input {
-  display: none;
+.btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(106, 90, 205, 0.4);
+    color: white;
 }
 
-.checkmark {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--border-color);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
+/* Poprawione style dla odznaki ukończenia */
+.course-completed-badge {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 8px rgba(46, 204, 113, 0.3);
+    animation: pulse 2s infinite;
+    margin-left: auto; /* ✅ Wyrzuca na prawą stronę */
+    margin-right: 1rem;
+    order: 1; /* ✅ Ustawia jako pierwszy element w kontenerze flex */
 }
 
-.checkmark::after {
-  content: '✓';
-  color: white;
-  font-size: 12px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
-.completion-toggle input:checked + .checkmark {
-  background-color: #2ecc71;
-  border-color: #2ecc71;
-}
-
-.completion-toggle input:checked + .checkmark::after {
-  opacity: 1;
-}
-
-.toggle-label {
-  font-size: 0.9rem;
-  color: var(--text-color);
-}
-
+/* Przycisk rozwijania szczegółów */
 .toggle-details-btn {
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: all 0.3s ease;
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.7rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
 }
 
 .toggle-details-btn:hover {
-  background-color: var(--nav-hover);
+    background-color: var(--nav-hover);
+    transform: scale(1.1);
 }
 
 /* Szczegóły kursu */
 .course-details {
-  display: none;
-  padding: 0 1.5rem 1.5rem;
-  background: var(--card-bg);
+    display: none;
+    padding: 0 1.5rem 1.5rem;
+    background: var(--card-bg);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .course-content {
-  border-top: 1px solid var(--border-color);
-  padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
 }
 
-.course-description h4,
-.course-video h4 {
-  color: var(--primary-color);
-  margin-bottom: 0.5rem;
-  font-size: 1.1rem;
+.course-description, .course-video {
+    margin-bottom: 1.5rem;
+}
+
+.course-description h4, .course-video h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .course-description p {
-  line-height: 1.6;
-  color: var(--text-color);
+    line-height: 1.7;
+    color: var(--text-color);
+    margin: 0;
+    padding: 0.8rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-color);
 }
-
 /* Kontener wideo */
 .video-container {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
-  height: 0;
-  margin: 1rem 0;
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    margin: 1rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .video-container iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 
 /* Metadane kursu */
 .course-meta {
-  display: flex;
-  gap: 2rem;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    flex-wrap: wrap;
 }
 
 .meta-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 6px;
 }
 
 .meta-item i {
-  color: var(--primary-color);
+    color: var(--primary-color);
+    width: 16px;
 }
 
 .meta-item i.completed {
-  color: #2ecc71;
+    color: #2ecc71;
+}
+
+/* Pasek postępu */
+.course-progress {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+    padding: 0.8rem;
+    background: rgba(106, 90, 205, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 4px;
+    transition: width 0.5s ease-in-out;
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.progress-text {
+    font-weight: 600;
+    color: var(--primary-color);
+    min-width: 50px;
+    text-align: right;
+    font-size: 0.9rem;
 }
 
 /* Loader i komunikaty */
@@ -3679,3 +3787,4 @@ footer {
 [data-theme="dark"] .time-period-controls {
     background: #2d2d2d;
 }
+
