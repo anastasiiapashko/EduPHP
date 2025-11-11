@@ -325,4 +325,62 @@ public class UserTaskService {
         return mapToDTO(saved);
     }
     
+ // W UserTaskService.java dodaj tę metodę:
+
+    public List<UserTaskDTO> filterTasksByPeriod(List<UserTaskDTO> tasks, String period, String date) {
+        if (tasks == null || tasks.isEmpty()) {
+            return tasks;
+        }
+        
+        LocalDateTime filterDate;
+        try {
+            filterDate = LocalDateTime.parse(date + "T00:00:00");
+        } catch (Exception e) {
+            // Jeśli data jest nieprawidłowa, zwróć wszystkie zadania
+            return tasks;
+        }
+        
+        return tasks.stream()
+            .filter(task -> {
+                LocalDateTime taskDate = getTaskDate(task);
+                if (taskDate == null) return false;
+                
+                switch (period.toLowerCase()) {
+                    case "weekly":
+                        return isInSameWeek(taskDate, filterDate);
+                    case "monthly":
+                        return isInSameMonth(taskDate, filterDate);
+                    case "yearly":
+                        return isInSameYear(taskDate, filterDate);
+                    default:
+                        return true;
+                }
+            })
+            .collect(Collectors.toList());
+    }
+
+    private LocalDateTime getTaskDate(UserTaskDTO task) {
+        if (task.getCompletionDate() != null) {
+            return task.getCompletionDate();
+        } else if (task.getStartDate() != null) {
+            return task.getStartDate();
+        }
+        return null;
+    }
+
+    private boolean isInSameWeek(LocalDateTime date1, LocalDateTime date2) {
+        LocalDateTime startOfWeek1 = date1.with(java.time.DayOfWeek.MONDAY);
+        LocalDateTime startOfWeek2 = date2.with(java.time.DayOfWeek.MONDAY);
+        return startOfWeek1.toLocalDate().equals(startOfWeek2.toLocalDate());
+    }
+
+    private boolean isInSameMonth(LocalDateTime date1, LocalDateTime date2) {
+        return date1.getMonth() == date2.getMonth() && 
+               date1.getYear() == date2.getYear();
+    }
+
+    private boolean isInSameYear(LocalDateTime date1, LocalDateTime date2) {
+        return date1.getYear() == date2.getYear();
+    }
+    
 }

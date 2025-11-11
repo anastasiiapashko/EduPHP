@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +42,6 @@ public class UserTaskController {
     }
 
     // Zapisz rozwiązanie
- // Tylko zapisz rozwiązanie BEZ zwiększania prób
     @PutMapping("/{userId}/task/{taskId}/save-only")
     public ResponseEntity<?> saveSolutionOnly(
             @PathVariable Integer userId,
@@ -152,6 +152,28 @@ public class UserTaskController {
         return ResponseEntity.ok(stats);
     }
 
+    @GetMapping("/user/{userId}/statistics/detailed")
+    public ResponseEntity<List<UserTaskDTO>> getUserDetailedStatistics(
+            @PathVariable Integer userId,
+            @RequestParam(required = false) String period, // weekly, monthly, yearly
+            @RequestParam(required = false) String date) { // konkretna data
+        
+        try {
+            List<UserTaskDTO> userTasks = userTaskService.getAllUserTasksDTO(userId);
+            
+            // Filtrowanie według okresu (możesz dodać logikę filtrowania)
+            if (period != null && date != null) {
+                // Tutaj dodaj logikę filtrowania według okresu
+                userTasks = userTaskService.filterTasksByPeriod(userTasks, period, date);
+            }
+            
+            return ResponseEntity.ok(userTasks);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
+        }
+    }
+    
     @RequestMapping(method = RequestMethod.OPTIONS, value = "/**")
     public ResponseEntity<?> handleOptions() {
         return ResponseEntity.ok().build();
