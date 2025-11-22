@@ -18,6 +18,7 @@ class TasksViewer {
         this.tasksPerPage = 10;
         this.currentFilters = {
             search: '',
+            course: 'all', 
             difficulty: 'all',
             sort: 'newest'
         };
@@ -31,7 +32,7 @@ class TasksViewer {
         this.setupEventListeners();
     }
 
-    // Ładowanie kursów (tylko do wyświetlania nazw)
+    // Ładowanie kursów i wypełnianie filtra
     async loadCourses() {
         try {
             const response = await fetch('http://localhost:8082/api/kurs/all', {
@@ -40,6 +41,7 @@ class TasksViewer {
             
             if (response.ok) {
                 this.courses = await response.json();
+                this.populateCourseFilter();
                 console.log('Załadowane kursy do wyświetlania:', this.courses);
             } else {
                 console.warn('Nie udało się załadować kursów do wyświetlania');
@@ -47,6 +49,25 @@ class TasksViewer {
         } catch (error) {
             console.error('Błąd podczas ładowania kursów:', error);
         }
+    }
+
+    // Wypełnij select z kursami
+    populateCourseFilter() {
+        const courseFilter = document.getElementById('courseFilter');
+        if (!courseFilter) return;
+
+        // Zachowaj opcję "Wszystkie kursy"
+        const defaultOption = courseFilter.querySelector('option[value="all"]');
+        courseFilter.innerHTML = '';
+        courseFilter.appendChild(defaultOption);
+        
+        // Dodaj kursy do selecta
+        this.courses.forEach(course => {
+            const option = document.createElement('option');
+            option.value = course.idKursu;
+            option.textContent = course.tytul || `Kurs #${course.idKursu}`;
+            courseFilter.appendChild(option);
+        });
     }
 
     async loadTasks() {
@@ -71,17 +92,29 @@ class TasksViewer {
 
     applyFilters() {
         this.filteredTasks = this.tasks.filter(task => {
+            // Filtrowanie po wyszukiwaniu (rozszerzone o nazwę kursu)
             if (this.currentFilters.search) {
                 const searchTerm = this.currentFilters.search.toLowerCase();
                 const taskTitle = task.tytul || '';
                 const taskDescription = task.description || '';
+                const courseName = this.getCourseName(task.kursId).toLowerCase();
                 
                 const matchesSearch = 
                     taskTitle.toLowerCase().includes(searchTerm) ||
-                    taskDescription.toLowerCase().includes(searchTerm);
+                    taskDescription.toLowerCase().includes(searchTerm) ||
+                    courseName.includes(searchTerm); // DODANO: wyszukiwanie po nazwie kursu
+                
                 if (!matchesSearch) return false;
             }
 
+            // Filtrowanie po kursie
+            if (this.currentFilters.course !== 'all') {
+                if (task.kursId !== parseInt(this.currentFilters.course)) {
+                    return false;
+                }
+            }
+
+            // Filtrowanie po poziomie trudności
             if (this.currentFilters.difficulty !== 'all') {
                 if (task.difficulty !== this.currentFilters.difficulty) {
                     return false;
@@ -141,7 +174,6 @@ class TasksViewer {
         const endIndex = startIndex + this.tasksPerPage;
         const paginatedTasks = this.filteredTasks.slice(startIndex, endIndex);
 
-        // TYLKO przycisk "Rozwiąż zadanie" - bez edycji/usuwania
         tasksList.innerHTML = paginatedTasks.map(task => {
             const courseName = this.getCourseName(task.kursId);
             return `
@@ -234,12 +266,23 @@ class TasksViewer {
     setupEventListeners() {
         // Filtry
         const searchInput = document.getElementById('searchInput');
+        const courseFilter = document.getElementById('courseFilter'); // DODANO
         const difficultyFilter = document.getElementById('difficultyFilter');
         const sortSelect = document.getElementById('sortSelect');
 
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 this.currentFilters.search = e.target.value;
+                this.currentPage = 1;
+                this.applyFilters();
+                this.displayTasks();
+            });
+        }
+
+        // DODANO: Obsługa filtra kursu
+        if (courseFilter) {
+            courseFilter.addEventListener('change', (e) => {
+                this.currentFilters.course = e.target.value;
                 this.currentPage = 1;
                 this.applyFilters();
                 this.displayTasks();
@@ -274,7 +317,7 @@ class TasksViewer {
             });
         }
 
-        // TYLKO przyciski rozwiązywania zadań
+        // Przyciski rozwiązywania zadań
         const tasksList = document.getElementById('tasksList');
         if (tasksList) {
             tasksList.addEventListener('click', (e) => {

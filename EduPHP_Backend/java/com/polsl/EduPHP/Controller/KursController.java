@@ -133,7 +133,6 @@ public class KursController {
         try {
             System.out.println("=== ENDPOINT CALLED: /api/kurs/user/" + userId + "/overall-progress ===");
             Double progress = kursService.getOverallProgress(userId);
-            System.out.println("Zwracam ogólny progres: " + progress);
             return ResponseEntity.ok(progress);
         } catch (Exception e) {
             System.err.println("!!! BŁĄD W ENDPOINT /overall-progress !!!");
@@ -147,7 +146,7 @@ public class KursController {
         try {
             System.out.println("=== ENDPOINT CALLED: /api/kurs/user/" + userId + "/completed-count ===");
             Long count = kursService.getCompletedCoursesCount(userId);
-            System.out.println("Zwracam liczbę ukończonych kursów: " + count);
+            //System.out.println("Zwracam liczbę ukończonych kursów: " + count);
             return ResponseEntity.ok(count);
         } catch (Exception e) {
             System.err.println("!!! BŁĄD W ENDPOINT /completed-count !!!");

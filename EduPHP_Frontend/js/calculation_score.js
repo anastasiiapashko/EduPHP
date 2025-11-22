@@ -82,20 +82,3 @@ export class ScoreCalculator {
         };
     }
 }
-
-// Przykłady użycia:
-/*
-const calculator = new ScoreCalculator();
-
-// Przykład 1: Idealne rozwiązanie (1 próba, 5 minut)
-console.log(calculator.calculateScore(5, 1)); // ~9.5
-
-// Przykład 2: Średnie rozwiązanie (3 próby, 15 minut)
-console.log(calculator.calculateScore(15, 3)); // ~6.8
-
-// Przykład 3: Słabe rozwiązanie (8 prób, 25 minut)
-console.log(calculator.calculateScore(25, 8)); // ~2.3
-
-// Przykład 4: Maksymalny czas/próby
-console.log(calculator.calculateScore(30, 10)); // 0.0
-*/

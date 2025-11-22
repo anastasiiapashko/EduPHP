@@ -50,7 +50,14 @@
                 <div class="filters-container">
                     <div class="filter-group">
                         <label for="searchInput"><i class="fas fa-search"></i> Szukaj:</label>
-                        <input type="text" id="searchInput" placeholder="Szukaj w tytułach i opisach...">
+                        <input type="text" id="searchInput" placeholder="Szukaj w tytułach, opisach i kursach...">
+                    </div>
+                    <div class="filter-group">
+                        <label for="courseFilter"><i class="fas fa-book"></i> Kurs:</label>
+                        <select id="courseFilter">
+                            <option value="all">Wszystkie kursy</option>
+                            <!-- Kursy zostaną załadowane dynamicznie -->
+                        </select>
                     </div>
                     <div class="filter-group">
                         <label for="difficultyFilter"><i class="fas fa-signal"></i> Poziom trudności:</label>

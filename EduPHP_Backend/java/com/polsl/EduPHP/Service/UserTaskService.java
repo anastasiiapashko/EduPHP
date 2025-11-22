@@ -238,6 +238,7 @@ public class UserTaskService {
             userTask.setAttempts(0);
             userTask.setScore(0);
             userTask.setCompletionDate(null);
+            userTask.setStartDate(null);
             
             UserTask saved = userTaskRepository.save(userTask);
             return mapToDTO(saved);
