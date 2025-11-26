@@ -268,23 +268,67 @@ public class PHPExecutorService {
         "    }\n" +
         "    \n" +
         "    private function modifySelectQuery(string $query): string {\n" +
-        "        if (stripos($query, 'WHERE') !== false) {\n" +
-        "            return preg_replace('/WHERE\\s+/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) AND ', $query);\n" +
-        "        } else {\n" +
-        "            // Dodaj WHERE jeśli nie ma\n" +
-        "            if (stripos($query, 'GROUP BY') !== false) {\n" +
-        "                return preg_replace('/GROUP BY/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) GROUP BY', $query);\n" +
-        "            } elseif (stripos($query, 'ORDER BY') !== false) {\n" +
-        "                return preg_replace('/ORDER BY/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) ORDER BY', $query);\n" +
-        "            } elseif (stripos($query, 'LIMIT') !== false) {\n" +
-        "                return preg_replace('/LIMIT/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) LIMIT', $query);\n" +
+        "        // ZABEZPIECZENIE PRZED WIELKIMI ZAPYTANIAMI SELECT - automatyczny LIMIT\n" +
+        "        $query_upper = strtoupper($query);\n" +
+        "        \n" +
+        "        // Sprawdź czy już ma LIMIT\n" +
+        "        if (strpos($query_upper, 'LIMIT') === false) {\n" +
+        "            // Jeśli nie ma LIMIT, dodaj automatyczny LIMIT 100\n" +
+        "            if (stripos($query, 'WHERE') !== false) {\n" +
+        "                $query = preg_replace('/WHERE\\s+/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) AND ', $query);\n" +
         "            } else {\n" +
-        "                return $query . ' WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL)';\n" +
+        "                // Dodaj WHERE jeśli nie ma\n" +
+        "                if (stripos($query, 'GROUP BY') !== false) {\n" +
+        "                    $query = preg_replace('/GROUP BY/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) GROUP BY', $query);\n" +
+        "                } elseif (stripos($query, 'ORDER BY') !== false) {\n" +
+        "                    $query = preg_replace('/ORDER BY/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) ORDER BY', $query);\n" +
+        "                } else {\n" +
+        "                    $query = $query . ' WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL)';\n" +
+        "                }\n" +
+        "            }\n" +
+        "            \n" +
+        "            // DODAJ AUTOMATYCZNY LIMIT 100\n" +
+        "            $query = $query . ' LIMIT 100';\n" +
+        "        } else {\n" +
+        "            // Jeśli już ma LIMIT, tylko dodaj warunek user_id\n" +
+        "            if (stripos($query, 'WHERE') !== false) {\n" +
+        "                $query = preg_replace('/WHERE\\s+/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) AND ', $query);\n" +
+        "            } else {\n" +
+        "                if (stripos($query, 'GROUP BY') !== false) {\n" +
+        "                    $query = preg_replace('/GROUP BY/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) GROUP BY', $query);\n" +
+        "                } elseif (stripos($query, 'ORDER BY') !== false) {\n" +
+        "                    $query = preg_replace('/ORDER BY/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) ORDER BY', $query);\n" +
+        "                } else {\n" +
+        "                    $query = $query . ' WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL)';\n" +
+        "                }\n" +
         "            }\n" +
         "        }\n" +
+        "        \n" +
+        "        return $query;\n" +
         "    }\n" +
         "\n" +
         "    private function modifyInsertQuery(string $query): string {\n" +
+        "        // ZABEZPIECZENIE PRZED MASOWYM INSERTEM - limit 50 rekordów\n" +
+        "        $query_lower = strtolower($query);\n" +
+        "        \n" +
+        "        // Sprawdź czy to INSERT z wieloma wartościami\n" +
+        "        if (preg_match('/values\\s*\\([^)]+\\)\\s*,\\s*\\([^)]+\\)/i', $query)) {\n" +
+        "            // INSERT z wieloma VALUES: INSERT INTO table VALUES (a,b), (c,d), (e,f)\n" +
+        "            $values_count = preg_match_all('/\\([^)]+\\)/i', $query);\n" +
+        "            if ($values_count > 50) {\n" +
+        "                die(\"❌ BŁĄD BEZPIECZEŃSTWA: Próbujesz wstawić zbyt wiele rekordów naraz (max 100). Liczba wykrytych rekordów: \" . $values_count);\n" +
+        "            }\n" +
+        "        } else {\n" +
+        "            // Pojedynczy INSERT - sprawdź czy nie ma zbyt wielu wartości\n" +
+        "            if (preg_match('/values\\s*\\((.*?)\\)/i', $query, $matches)) {\n" +
+        "                $values = $matches[1];\n" +
+        "                $value_count = substr_count($values, ',') + 1; // Liczba wartości\n" +
+        "                if ($value_count > 5) { // Jeśli zbyt wiele kolumn\n" +
+        "                    die(\"❌ BŁĄD BEZPIECZEŃSTWA: Zbyt wiele wartości w INSERT (max 50 kolumn). Liczba wykrytych wartości: \" . $value_count);\n" +
+        "                }\n" +
+        "            }\n" +
+        "        }\n" +
+        "        \n" +
         "        // Sprawdź czy podano kolumny\n" +
         "        if (preg_match('/INSERT\\s+INTO\\s+\\w+\\s*\\((.*?)\\)/i', $query, $matches)) {\n" +
         "            // INSERT z kolumnami: INSERT INTO table (col1, col2) VALUES (val1, val2)\n" +
