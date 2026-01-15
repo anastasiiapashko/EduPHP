@@ -23,22 +23,22 @@ public class SandboxUserService {
  private static final int MAX_SANDBOX_ID = 99999;
  
  public Integer getOrCreateSandboxUserId(Integer mainUserId) {
-     // Sprawdź czy już ma sandbox_id
+     // Sprawdzenie czy już ma sandbox_id
      Optional<Integer> existingSandboxId = userRepository.findSandboxUserIdByUserId(mainUserId);
      if (existingSandboxId.isPresent() && existingSandboxId.get() != null) {
          return existingSandboxId.get();
      }
      
-     // Generuj nowe randomowe ID
+     // Generowanie nowego randomowego ID
      Integer newSandboxId = generateUniqueSandboxId();
      
-     // Zapisz do bazy
+     // Zapisanie do bazy
      User user = userRepository.findById(mainUserId)
          .orElseThrow(() -> new RuntimeException("User not found: " + mainUserId));
      user.setSandboxUserId(newSandboxId);
      userRepository.save(user);
      
-     System.out.println("🎯 Przypisano sandbox_id: " + newSandboxId + " dla user: " + mainUserId);
+     System.out.println("Przypisano sandbox_id: " + newSandboxId + " dla user: " + mainUserId);
      return newSandboxId;
  }
  
@@ -49,7 +49,7 @@ public class SandboxUserService {
      while (attempts < maxAttempts) {
          Integer randomId = ThreadLocalRandom.current().nextInt(MIN_SANDBOX_ID, MAX_SANDBOX_ID + 1);
          
-         // Sprawdź czy ID jest unikalne
+         // Sprawdzenie czy ID jest unikalne
          Optional<User> existingUser = userRepository.findBySandboxUserId(randomId);
          if (existingUser.isEmpty()) {
              return randomId;

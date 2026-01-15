@@ -27,7 +27,7 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(authz -> authz
-                .anyRequest().permitAll() // Tymczasowo zezwól na wszystko
+                .anyRequest().permitAll() 
             );
         
         return http.build();

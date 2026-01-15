@@ -15,7 +15,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
+ //Twoje konto
 @Service
 @Transactional
 public class PHPExecutorService {
@@ -49,7 +49,7 @@ public class PHPExecutorService {
             System.out.println("=== END PHP DEBUG ===");
             
         } catch (Exception e) {
-            System.err.println("❌ PHP NOT AVAILABLE: " + e.getMessage());
+            System.err.println("PHP NOT AVAILABLE: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -74,7 +74,7 @@ public class PHPExecutorService {
             StandardOpenOption.TRUNCATE_EXISTING, 
             StandardOpenOption.WRITE);
         
-        System.out.println("💾 Zapisano/aktualizowano plik: " + solutionFile.toAbsolutePath());
+        System.out.println("Zapisano/aktualizowano plik: " + solutionFile.toAbsolutePath());
         return solutionFile.toString();
     }
     
@@ -203,7 +203,7 @@ public class PHPExecutorService {
         "// AUTO-GENERATED SECURITY WRAPPERS - EduPHP\n" +
         "error_reporting(E_ALL);\n" +
         "ini_set('display_errors', '1');\n" +
-        "ini_set('max_execution_time', 10);\n" +
+        "ini_set('max_execution_time', 5);\n" +
         "ini_set('memory_limit', '128M');\n" +
         "set_time_limit(10);\n" +
         "\n" +
@@ -236,7 +236,11 @@ public class PHPExecutorService {
         "    }\n" +
         "    \n" +
         "    public function query(string $query, int $resultmode = MYSQLI_STORE_RESULT): mysqli_result|bool {\n" +
+        "        echo \"DEBUG QUERY START ===\\n\";\n" +
+        "        echo \"DEBUG Original query: $query\\n\";\n" +
         "        $secured_query = $this->addUserIsolation($query);\n" +
+        "        echo \"DEBUG Modified query: $secured_query\\n\";\n" +
+        "        echo \"DEBUG QUERY END ===\\n\\n\";\n" +
         "        return parent::query($secured_query, $resultmode);\n" +
         "    }\n" +
         "    \n" +
@@ -268,6 +272,13 @@ public class PHPExecutorService {
         "    }\n" +
         "    \n" +
         "    private function modifySelectQuery(string $query): string {\n" +
+        "        // Sprawdź czy to zapytanie z JOIN\n" +
+        "        $query_lower = strtolower($query);\n" +
+        "        \n" +
+        "        if (strpos($query_lower, 'join') !== false) {\n" +
+        "            return $this->modifyJoinQuery($query);\n" +
+        "        }\n" +
+        "        \n" +
         "        // ZABEZPIECZENIE PRZED WIELKIMI ZAPYTANIAMI SELECT - automatyczny LIMIT\n" +
         "        $query_upper = strtoupper($query);\n" +
         "        \n" +
@@ -306,51 +317,127 @@ public class PHPExecutorService {
         "        \n" +
         "        return $query;\n" +
         "    }\n" +
-        "\n" +
-        "    private function modifyInsertQuery(string $query): string {\n" +
-        "        // ZABEZPIECZENIE PRZED MASOWYM INSERTEM - limit 50 rekordów\n" +
+        "    \n" +
+        "    private function modifyJoinQuery(string $query): string {\n" +
+        "        // PROSTE ROZWIĄZANIE BEZ ALIASÓW\n" +
         "        $query_lower = strtolower($query);\n" +
+        "        $query_upper = strtoupper($query);\n" +
         "        \n" +
-        "        // Sprawdź czy to INSERT z wieloma wartościami\n" +
-        "        if (preg_match('/values\\s*\\([^)]+\\)\\s*,\\s*\\([^)]+\\)/i', $query)) {\n" +
-        "            // INSERT z wieloma VALUES: INSERT INTO table VALUES (a,b), (c,d), (e,f)\n" +
-        "            $values_count = preg_match_all('/\\([^)]+\\)/i', $query);\n" +
-        "            if ($values_count > 50) {\n" +
-        "                die(\"❌ BŁĄD BEZPIECZEŃSTWA: Próbujesz wstawić zbyt wiele rekordów naraz (max 100). Liczba wykrytych rekordów: \" . $values_count);\n" +
-        "            }\n" +
-        "        } else {\n" +
-        "            // Pojedynczy INSERT - sprawdź czy nie ma zbyt wielu wartości\n" +
-        "            if (preg_match('/values\\s*\\((.*?)\\)/i', $query, $matches)) {\n" +
-        "                $values = $matches[1];\n" +
-        "                $value_count = substr_count($values, ',') + 1; // Liczba wartości\n" +
-        "                if ($value_count > 5) { // Jeśli zbyt wiele kolumn\n" +
-        "                    die(\"❌ BŁĄD BEZPIECZEŃSTWA: Zbyt wiele wartości w INSERT (max 50 kolumn). Liczba wykrytych wartości: \" . $value_count);\n" +
-        "                }\n" +
-        "            }\n" +
+        "        $conditions = [];\n" +
+        "        \n" +
+        "        if (strpos($query_lower, 'orders') !== false) {\n" +
+        "            $conditions[] = \"(orders.user_id = \" . $this->user_id . \" OR orders.user_id IS NULL)\";\n" +
         "        }\n" +
         "        \n" +
-        "        // Sprawdź czy podano kolumny\n" +
-        "        if (preg_match('/INSERT\\s+INTO\\s+\\w+\\s*\\((.*?)\\)/i', $query, $matches)) {\n" +
-        "            // INSERT z kolumnami: INSERT INTO table (col1, col2) VALUES (val1, val2)\n" +
-        "            $columns = $matches[1];\n" +
-        "            $new_columns = $columns . ', user_id';\n" +
+        "        if (strpos($query_lower, 'customers') !== false) {\n" +
+        "            $conditions[] = \"(customers.user_id = \" . $this->user_id . \" OR customers.user_id IS NULL)\";\n" +
+        "        }\n" +
+        "        \n" +
+        "        if (strpos($query_lower, 'products') !== false) {\n" +
+        "            $conditions[] = \"(products.user_id = \" . $this->user_id . \" OR products.user_id IS NULL)\";\n" +
+        "        }\n" +
+        "        \n" +
+        "        if (empty($conditions)) {\n" +
+        "            return $this->addLimitIfMissing($query, $query_upper);\n" +
+        "        }\n" +
+        "        \n" +
+        "        $combinedCondition = '(' . implode(' AND ', $conditions) . ')';\n" +
+        "        \n" +
+        "        $where_pos = stripos($query, 'WHERE');\n" +
+        "        \n" +
+        "        if ($where_pos !== false) {\n" +
+        "            $query = substr_replace($query, 'WHERE ' . $combinedCondition . ' AND ', $where_pos, 5);\n" +
+        "        } else {\n" +
+        "            $order_by_pos = stripos($query, 'ORDER BY');\n" +
+        "            $group_by_pos = stripos($query, 'GROUP BY');\n" +
+        "            $limit_pos = stripos($query, 'LIMIT');\n" +
         "            \n" +
-        "            // Dodaj wartość user_id do VALUES\n" +
-        "            $query = preg_replace('/VALUES\\s*\\((.*?)\\)/i', 'VALUES($1, ' . $this->user_id . ')', $query);\n" +
-        "            $query = str_replace('(' . $columns . ')', '(' . $new_columns . ')', $query);\n" +
-        "        } else {\n" +
-        "            // INSERT bez kolumn: INSERT INTO table VALUES (val1, val2)\n" +
-        "            $query = preg_replace('/VALUES\\s*\\((.*?)\\)/i', 'VALUES($1, ' . $this->user_id . ')', $query);\n" +
+        "            if ($order_by_pos !== false) {\n" +
+        "                $query = substr_replace($query, 'WHERE ' . $combinedCondition . ' ', $order_by_pos, 0);\n" +
+        "            } else if ($group_by_pos !== false) {\n" +
+        "                $query = substr_replace($query, 'WHERE ' . $combinedCondition . ' ', $group_by_pos, 0);\n" +
+        "            } else if ($limit_pos !== false) {\n" +
+        "                $query = substr_replace($query, 'WHERE ' . $combinedCondition . ' ', $limit_pos, 0);\n" +
+        "            } else {\n" +
+        "                $query .= ' WHERE ' . $combinedCondition;\n" +
+        "            }\n" +
         "        }\n" +
         "        \n" +
+        "        return $this->addLimitIfMissing($query, $query_upper);\n" +
+        "    }\n" +
+        "    \n" +
+        "    private function addLimitIfMissing(string $query, string $query_upper): string {\n" +
+        "        if (strpos($query_upper, 'LIMIT') === false) {\n" +
+        "            $query .= ' LIMIT 100';\n" +
+        "        }\n" +
         "        return $query;\n" +
         "    }\n" +
         "    \n" +
+        "    private function modifyInsertQuery(string $query): string {\n" +
+        "        echo \"DEBUG modifyInsertQuery INPUT: $query\\n\";\n" +
+        "        \n" +
+        "        // Tylko dla INSERT INTO orders\n" +
+        "        if (stripos($query, 'INSERT INTO orders') === false) {\n" +
+        "            echo \"DEBUG: Not INSERT INTO orders, skipping\\n\";\n" +
+        "            return $query;\n" +
+        "        }\n" +
+        "        \n" +
+        "        // Jeśli już ma 'user_id' w zapytaniu - NIE ZMIENIAJ\n" +
+        "        if (stripos($query, 'user_id') !== false) {\n" +
+        "            echo \"DEBUG: Already has user_id, skipping\\n\";\n" +
+        "            return $query;\n" +
+        "        }\n" +
+        "        \n" +
+        "        // USUŃ NOWE LINIE dla łatwiejszego parsowania\n" +
+        "        $query_normalized = str_replace(array(\"\\r\", \"\\n\"), ' ', $query);\n" +
+        "        $query_normalized = preg_replace('/\\s+/', ' ', $query_normalized); // Zastąp wiele spacji jedną\n" +
+        "        echo \"DEBUG Normalized query: $query_normalized\\n\";\n" +
+        "        \n" +
+        "        // Znajdź ') VALUES' w znormalizowanym zapytaniu\n" +
+        "        $values_pos = stripos($query_normalized, ') VALUES');\n" +
+        "        if ($values_pos === false) {\n" +
+        "            echo \"DEBUG: Cannot find ') VALUES' even in normalized query\\n\";\n" +
+        "            return $query;\n" +
+        "        }\n" +
+        "        \n" +
+        "        // Teraz musimy znaleźć odpowiednie pozycje w ORYGINALNYM zapytaniu\n" +
+        "        // 1. Znajdź pierwszy ')' w oryginalnym zapytaniu (koniec kolumn)\n" +
+        "        $first_paren_pos = strpos($query, ')');\n" +
+        "        if ($first_paren_pos === false) {\n" +
+        "            echo \"DEBUG: Cannot find first ')'\\n\";\n" +
+        "            return $query;\n" +
+        "        }\n" +
+        "        \n" +
+        "        // 2. Dodaj ', user_id' przed pierwszym ')'\n" +
+        "        $part1 = substr($query, 0, $first_paren_pos);\n" +
+        "        $part2 = substr($query, $first_paren_pos);\n" +
+        "        \n" +
+        "        $new_part1 = $part1 . ', user_id';\n" +
+        "        \n" +
+        "        // 3. Znajdź ostatni ')' w oryginalnym zapytaniu (koniec VALUES)\n" +
+        "        $last_paren_pos = strrpos($part2, ')');\n" +
+        "        if ($last_paren_pos === false) {\n" +
+        "            echo \"DEBUG: Cannot find last ')'\\n\";\n" +
+        "            return $query;\n" +
+        "        }\n" +
+        "        \n" +
+        "        // 4. Dodaj ', X' przed ostatnim ')'\n" +
+        "        $part2a = substr($part2, 0, $last_paren_pos);\n" +
+        "        $part2b = substr($part2, $last_paren_pos);\n" +
+        "        \n" +
+        "        $new_part2 = $part2a . ', ' . $this->user_id . $part2b;\n" +
+        "        \n" +
+        "        // 5. Połącz\n" +
+        "        $new_query = $new_part1 . $new_part2;\n" +
+        "        \n" +
+        "        echo \"DEBUG modifyInsertQuery OUTPUT: $new_query\\n\";\n" +
+        "        return $new_query;\n" +
+        "    }\n" +
         "    private function modifyUpdateDeleteQuery(string $query): string {\n" +
         "        if (stripos($query, 'WHERE') !== false) {\n" +
-        "            return preg_replace('/WHERE\\s+/i', 'WHERE user_id = ' . $this->user_id . ' AND ', $query);\n" +
+        "            return preg_replace('/WHERE\\s+/i', 'WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL) AND ', $query);\n" +
         "        } else {\n" +
-        "            return $query . ' WHERE user_id = ' . $this->user_id;\n" +
+        "            return $query . ' WHERE (user_id = ' . $this->user_id . ' OR user_id IS NULL)';\n" +
         "        }\n" +
         "    }\n" +
         "}\n" +
@@ -368,9 +455,8 @@ public class PHPExecutorService {
         "} catch (Throwable $e) {\n" +
         "    $error_msg = 'RUNTIME_ERROR: ' . $e->getMessage();\n" +
         "    \n" +
-        "    // Dodatkowa pomoc dla częstych błędów\n" +
         "    if (strpos($e->getMessage(), 'Column count doesn\\'t match value count') !== false) {\n" +
-        "        $error_msg .= \"\\n💡 Wskazówka: Upewnij się, że podajesz nazwy kolumn w INSERT: INSERT INTO tabela (kol1, kol2) VALUES (wart1, wart2)\";\n" +
+        "        $error_msg .= \"\\n Wskazówka: Upewnij się, że podajesz nazwy kolumn w INSERT: INSERT INTO tabela (kol1, kol2) VALUES (wart1, wart2)\";\n" +
         "    }\n" +
         "    \n" +
         "    echo $error_msg . \"\\n\";\n" +
@@ -380,7 +466,7 @@ public class PHPExecutorService {
         "    }\n" +
         "}\n" +
         "?>";
- }
+    }
     
     private Process executePHPProcess(Path phpFile) throws IOException, TimeoutException {
         ProcessBuilder processBuilder = new ProcessBuilder(
@@ -401,7 +487,7 @@ public class PHPExecutorService {
         // Timeout zabezpieczenie
         new Thread(() -> {
             try {
-                if (!process.waitFor(10, TimeUnit.SECONDS)) {
+                if (!process.waitFor(5, TimeUnit.SECONDS)) {
                     process.destroyForcibly();
                 }
             } catch (InterruptedException e) {
@@ -434,7 +520,7 @@ public class PHPExecutorService {
             System.err.println("Nie udało się usunąć pliku tymczasowego: " + tempFile);
         }
     }
-    
+   
     // Główna metoda wykonująca kod PHP (bez zmian)
     public PHPExecutionResult executePHPCode(Integer userId, Integer taskId, String phpCode) {
         Path tempFile = null;
@@ -458,9 +544,9 @@ public class PHPExecutorService {
             return new PHPExecutionResult(success, output, errors, tempFile.toString());
             
         } catch (TimeoutException e) {
-            return new PHPExecutionResult(false, "", "⏰ Timeout: Kod wykonywał się zbyt długo (max 10 sekund)", "");
+            return new PHPExecutionResult(false, "", "Timeout: Kod wykonywał się zbyt długo (max 10 sekund)", "");
         } catch (Exception e) {
-            return new PHPExecutionResult(false, "", "❌ Błąd wykonania: " + e.getMessage(), "");
+            return new PHPExecutionResult(false, "", "Błąd wykonania: " + e.getMessage(), "");
         } finally {
             // 6. Sprzątanie plików tymczasowych
             if (tempFile != null) {

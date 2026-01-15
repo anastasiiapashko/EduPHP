@@ -4410,3 +4410,204 @@ footer {
     display: block;
     color: var(--border-color);
 }
+
+.hero-card {
+    max-width: 800px;
+    margin: 1rem auto;
+    padding: 2rem;
+    text-align: center;
+    background: linear-gradient(135deg, var(--card-bg) 0%, rgba(106, 90, 205, 0.05) 100%);
+    border-radius: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.hero-card h1 {
+    font-size: 2.2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-color);
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    line-height: 1.5;
+}
+
+/* Kompaktowe funkcje - w jednej linii */
+.compact-features {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: var(--bg-color);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.compact-feature {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 120px;
+}
+
+.compact-feature i {
+    font-size: 2rem;
+    color: var(--primary-color);
+    background: rgba(106, 90, 205, 0.1);
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 0.5rem;
+}
+
+.compact-feature span {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Sekcja CTA - zoptymalizowana */
+.cta-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.cta-text {
+    font-size: 1rem;
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.cta-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 0.9rem 1.8rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.cta-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(106, 90, 205, 0.3);
+}
+
+.cta-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    color: var(--primary-color);
+    padding: 0.9rem 1.8rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    border: 2px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.cta-secondary:hover {
+    background: rgba(106, 90, 205, 0.05);
+    transform: translateY(-2px);
+}
+
+/* Responsywność dla kompaktowego układu */
+@media (max-width: 768px) {
+    .hero-card {
+        padding: 1.5rem;
+        margin: 0.5rem;
+    }
+    
+    .hero-card h1 {
+        font-size: 1.8rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .compact-features {
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .compact-feature {
+        min-width: 100px;
+    }
+    
+    .compact-feature i {
+        font-size: 1.5rem;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .compact-feature span {
+        font-size: 0.8rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .cta-primary, .cta-secondary {
+        width: 100%;
+        justify-content: center;
+        padding: 0.8rem 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-card h1 {
+        font-size: 1.5rem;
+    }
+    
+    .compact-features {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .compact-feature {
+        flex-direction: row;
+        justify-content: flex-start;
+        min-width: auto;
+        gap: 1rem;
+    }
+    
+    .compact-feature i {
+        margin-bottom: 0;
+    }
+    
+    .compact-feature span {
+        text-align: left;
+    }
+}

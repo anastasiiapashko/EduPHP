@@ -122,8 +122,6 @@ public class KursService {
 
     public Double getProgressUkonczenia(Integer userId, Integer kursId) {
         try {
-            System.out.println("=== DEBUG: getProgressUkonczenia ===");
-            System.out.println("userId: " + userId + ", kursId: " + kursId);
             
             // Pobierz wszystkie zadania dla tego kursu
             List<Task> tasksInCourse = taskRepository.findByKurs_IdKursu(kursId);
@@ -166,8 +164,6 @@ public class KursService {
     
     public Double getOverallProgress(Integer userId) {
         try {
-            System.out.println("=== DEBUG: getOverallProgress ===");
-            System.out.println("userId: " + userId);
             
             // Pobierz wszystkie kursy użytkownika
             List<Kurs> userCourses = getKursyByUserId(userId);
@@ -204,8 +200,6 @@ public class KursService {
 
     public Long getCompletedCoursesCount(Integer userId) {
         try {
-            System.out.println("=== DEBUG: getCompletedCoursesCount ===");
-            System.out.println("userId: " + userId);
             
             // Pobierz wszystkie zapisy użytkownika na kursy
             List<UserKurs> userKursy = userKursRepository.findByUser_IdUser(userId);

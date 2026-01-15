@@ -83,9 +83,7 @@ public class UserService {
         
         // 4. ✅ WALIDACJA SPECJALNYCH ZNAKÓW (Null bytes, Path traversal)
         validateSpecialCharacters(firstName, secondName, login);
-        
-        // 5. ✅ WALIDACJA LOGIKI BIZNESOWEJ
-        validateBusinessLogic(rola);
+       
         
         // Aktualizacja oczyszczonych danych
         rejestracja.setFirstName(firstName);
@@ -189,14 +187,7 @@ public class UserService {
         }
     }
     
-    private void validateBusinessLogic(String rola) {
-        // Dodatkowa logika biznesowa - np. sprawdzanie uprawnień do tworzenia adminów
-        // Możesz dodać tutaj sprawdzanie czy aktualny użytkownik ma uprawnienia do tworzenia adminów
-        if ("admin".equals(rola)) {
-            // Tutaj możesz dodać dodatkową autoryzację
-            // throw new IllegalArgumentException("Brak uprawnień do tworzenia kont administratora");
-        }
-    }
+  
     
     // ✅ METODY POMOCNICZE
     private String sanitizeInput(String input) {
@@ -313,7 +304,7 @@ public Map<String, Object> sprawdzLogin(UserLogowanieDTO logowanie) {
                 // ✅ SPRAWDŹ CZY UŻYTKOWNIK JEST AKTYWNY - DODANE
                 if (Boolean.FALSE.equals(user.getIsActive())) {
                     response.put("valid", false);
-                    response.put("message", "❌ Twoje konto jest zablokowane. Skontaktuj się z administratorem.");
+                    response.put("message", "❌ Twoje konto jest zablokowane.");
                     return response;
                 }
                 
