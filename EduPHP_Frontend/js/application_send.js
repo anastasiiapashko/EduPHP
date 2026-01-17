@@ -14,13 +14,10 @@ export function setupApplicationForm() {
     
     console.log('Inicjalizacja formularza zgłoszeń...');
 
-    // Sprawdź czy jesteśmy w trybie edycji
     checkEditMode();
     
-    // Obsługa formularza
     applicationForm.addEventListener('submit', handleApplicationSubmit);
     
-    // Inicjalizacja licznika znaków
     setupCharCounter();
     
     console.log('Formularz zgłoszeń zainicjalizowany pomyślnie');
@@ -35,12 +32,10 @@ function checkEditMode() {
         editApplicationId = editId;
         console.log('Tryb edycji dla zgłoszenia ID:', editId);
         
-        // Zmień tytuł strony i przycisk
         document.querySelector('h1').innerHTML = '<i class="fas fa-edit"></i> Edytuj zgłoszenie';
         document.querySelector('p').textContent = 'Edytuj istniejące zgłoszenie problemu.';
         document.querySelector('.btn-primary').innerHTML = '<i class="fas fa-save"></i> Zapisz zmiany';
         
-        // Załaduj dane zgłoszenia
         loadApplicationData(editId);
     }
 }
@@ -112,7 +107,7 @@ async function handleApplicationSubmit(e) {
         let response;
         
         if (isEditMode) {
-            // Tryb edycji - PUT
+            // Tryb edycji 
             console.log('Aktualizowanie zgłoszenia ID:', editApplicationId);
             response = await fetch(`http://localhost:8082/api/applications/${editApplicationId}`, {
                 method: 'PUT',
@@ -123,7 +118,7 @@ async function handleApplicationSubmit(e) {
                 credentials: 'include'
             });
         } else {
-            // Tryb tworzenia - POST
+            // Tryb tworzenia 
             console.log('Tworzenie nowego zgłoszenia:', application);
             response = await fetch(`http://localhost:8082/api/applications/${userId}`, {
                 method: 'POST',
@@ -163,7 +158,6 @@ async function handleApplicationSubmit(e) {
     }
 }
 
-// Pozostałe funkcje pozostają bez zmian
 function showSuccessMessage(message) {
     removeExistingMessages();
     

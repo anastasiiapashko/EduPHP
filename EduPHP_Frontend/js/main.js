@@ -1,4 +1,3 @@
-// main.js - centralne zarządzanie autoryzacją
 import { setupThemeToggle } from './theme.js';
 import { setupRegistrationForm, setupLoginForm, checkAuth } from './auth.js';
 import { setupUserDashboard } from './dashboard.js';
@@ -31,24 +30,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const isPublicPage = publicPages.includes(currentPage);
         const isLoggedIn = checkAuth();
         
-        // Jeśli nie jesteśmy na stronie publicznej i użytkownik nie jest zalogowany
         if (!isPublicPage && !isLoggedIn) {
             console.log('Brak autoryzacji - przekierowanie do logowania');
             window.location.href = 'login.html';
-            return; // STOP - nie ładuj dalszych modułów
+            return; 
         }
         
-        // Jeśli jesteśmy na stronie logowania/rejestracji i użytkownik jest już zalogowany
         if (isPublicPage && isLoggedIn && currentPage !== 'index.html') {
             console.log('Użytkownik już zalogowany - przekierowanie do dashboardu');
             window.location.href = 'user_main.html';
             return;
         }
 
-        // Inicjalizuj moduły wspólne dla wszystkich stron
         setupThemeToggle();
         
-        // Inicjalizuj moduły dla stron publicznych
         if (isPublicPage) {
             setupRegistrationForm();
             setupLoginForm();

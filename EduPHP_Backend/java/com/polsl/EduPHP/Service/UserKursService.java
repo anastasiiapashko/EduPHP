@@ -27,7 +27,7 @@ public class UserKursService {
         Optional<Kurs> kursOpt = kursRepository.findById(kursId);
         
         if (userOpt.isPresent() && kursOpt.isPresent()) {
-            // Sprawdź czy już istnieje
+            
             Optional<UserKurs> existing = userKursRepository.findByUser_IdUserAndKurs_IdKursu(userId, kursId);
             if (existing.isPresent()) {
                 UserKurs userKurs = existing.get();
@@ -35,7 +35,7 @@ public class UserKursService {
                 return userKursRepository.save(userKurs);
             }
             
-            // Utwórz nowy
+            
             UserKurs userKurs = new UserKurs();
             userKurs.setUser(userOpt.get());
             userKurs.setKurs(kursOpt.get());

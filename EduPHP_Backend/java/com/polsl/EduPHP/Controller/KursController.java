@@ -146,7 +146,6 @@ public class KursController {
         try {
             System.out.println("=== ENDPOINT CALLED: /api/kurs/user/" + userId + "/completed-count ===");
             Long count = kursService.getCompletedCoursesCount(userId);
-            //System.out.println("Zwracam liczbę ukończonych kursów: " + count);
             return ResponseEntity.ok(count);
         } catch (Exception e) {
             System.err.println("!!! BŁĄD W ENDPOINT /completed-count !!!");

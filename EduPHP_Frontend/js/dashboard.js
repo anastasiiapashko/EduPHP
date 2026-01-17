@@ -1,4 +1,3 @@
-// dashboard.js - rozszerzenie o rzeczywiste aktywności
 import { showGlobalError } from './utils.js';
 import { setupAdminPermissions } from './permissions.js';
 import { getCurrentUserId } from './auth.js';
@@ -15,7 +14,7 @@ function setupUserDashboard() {
             const storedData = localStorage.getItem('userData');
             if (storedData) {
                 userData = JSON.parse(storedData);
-                console.log('✅ Znaleziono userData:', userData);
+                console.log(' Znaleziono userData:', userData);
                 
                 if (userMain) {
                     userMain.textContent = userData.firstName || userData.login || 'Użytkowniku';
@@ -25,7 +24,7 @@ function setupUserDashboard() {
                     userNameElement.textContent = userData.firstName || userData.login || 'Profil';
                 }
             } else {
-                console.warn('❌ Brak userData w localStorage');
+                console.warn(' Brak userData w localStorage');
                 window.location.href = 'login.html';
                 return;
             }
@@ -81,7 +80,6 @@ async function loadRecentActivity() {
         
         if (!activityList) return;
         
-        // Pokaż stan ładowania
         activityList.innerHTML = `
             <div class="activity-loading">
                 <div class="loader-spinner"></div>
@@ -93,7 +91,6 @@ async function loadRecentActivity() {
             activityEmpty.style.display = 'none';
         }
         
-        // Pobierz dane aktywności
         const activities = await fetchUserActivities();
         
         if (activities.length === 0) {
@@ -101,7 +98,6 @@ async function loadRecentActivity() {
             return;
         }
         
-        // Wyświetl aktywności
         displayActivities(activities, activityList);
         
     } catch (error) {
@@ -120,7 +116,6 @@ async function fetchUserActivities() {
     try {
         console.log('🔄 Pobieranie aktywności dla użytkownika:', userId);
         
-        // Pobierz zadania użytkownika
         const tasksResponse = await fetch(`http://localhost:8082/api/user-task/user/${userId}`, {
             credentials: 'include'
         });
@@ -132,7 +127,6 @@ async function fetchUserActivities() {
         const userTasks = await tasksResponse.json();
         console.log('📊 Zadania użytkownika:', userTasks);
         
-        // Pobierz kursy użytkownika
         const coursesResponse = await fetch(`http://localhost:8082/api/user-kurs/${userId}/kursy`, {
             credentials: 'include'
         });
@@ -143,7 +137,6 @@ async function fetchUserActivities() {
             console.log('📚 Kursy użytkownika:', userCourses);
         }
         
-        // Przekształć dane na aktywności
         return transformToActivities(userTasks, userCourses);
         
     } catch (error) {
@@ -156,7 +149,6 @@ async function fetchUserActivities() {
 function transformToActivities(userTasks, userCourses) {
     const activities = [];
     
-    // Dodaj ukończone zadania
     userTasks.forEach(task => {
         if (task.status === 'COMPLETED' && task.completionDate) {
             activities.push({
@@ -179,14 +171,13 @@ function transformToActivities(userTasks, userCourses) {
         }
     });
     
-    // Dodaj ukończone kursy
     userCourses.forEach(course => {
         if (course.ukonczony) {
             activities.push({
                 type: 'course_completed',
                 icon: 'fa-trophy',
                 text: `Ukończono kurs: ${course.tytul || 'Brak tytułu'}`,
-                time: new Date(), // Możesz dodać datę ukończenia kursu jeśli jest dostępna
+                time: new Date(), 
                 rawData: course
             });
         }

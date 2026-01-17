@@ -25,12 +25,12 @@ public class UserComplainController {
     private UserService userService;
     
     @GetMapping
-    public List<UserComplain> getAllApplications(){  // ← ZMIENIONE: Application zamiast ApplicationDTO
+    public List<UserComplain> getAllApplications(){  
         return applicationService.getAllApplications();
     }
     
     @GetMapping("/my/{userId}") 
-    public List<UserComplain> getUserApplications(@PathVariable Integer userId){  // ← ZMIENIONE
+    public List<UserComplain> getUserApplications(@PathVariable Integer userId){  
         Optional<User> user = userService.findById(userId);
         return user.map(u -> applicationService.getUserApplications(u.getIdUser()))
                   .orElse(List.of()); 
@@ -48,7 +48,7 @@ public class UserComplainController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserComplain> getApplicationById(@PathVariable Integer id) {  // ← ZMIENIONE
+    public ResponseEntity<UserComplain> getApplicationById(@PathVariable Integer id) { 
         Optional<UserComplain> application = applicationService.getApplicationById(id);
         return application.map(ResponseEntity::ok)
                          .orElse(ResponseEntity.notFound().build());
@@ -73,7 +73,7 @@ public class UserComplainController {
         return ResponseEntity.notFound().build();
     }
 
-    // 🔹 Usuwa zgłoszenie
+  
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteApplication(@PathVariable Integer id) {
         if (!applicationService.applicationExists(id)) {
@@ -84,7 +84,7 @@ public class UserComplainController {
         return ResponseEntity.ok().build();
     }
 
-    // 🔹 Liczy wszystkie zgłoszenia
+  
     @GetMapping("/count")
     public ResponseEntity<Long> getApplicationsCount() {
         long count = applicationService.countAllApplications();

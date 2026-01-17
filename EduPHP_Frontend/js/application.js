@@ -81,7 +81,7 @@ function filterAndDisplayApplications() {
         );
     }
 
-    // Filtrowanie po typie (wszystkie/moje)
+    // Filtrowanie po typie 
     if (currentFilter === 'my') {
         const currentUserId = getCurrentUserId();
         filteredApplications = filteredApplications.filter(app => 
@@ -134,7 +134,6 @@ function displayApplications(applications) {
 
     applicationsList.innerHTML = paginatedApplications.map(app => createApplicationCard(app)).join('');
     
-    // Dodaj event listeners do przycisków rozwijania
     addExpandListeners();
 }
 
@@ -479,7 +478,7 @@ async function loadAndDisplayAnswers(complainId) {
     const answersList = document.getElementById(`answers-list-${complainId}`);
     answersList.innerHTML = '<div class="loader">Ładowanie odpowiedzi...</div>';
     
-    answers = await loadAnswers(complainId); // ZAPISZ DO GLOBALNEJ ZMIENNEJ
+    answers = await loadAnswers(complainId); 
     
     if (answers.length === 0) {
         answersList.innerHTML = '<div class="empty-state">Brak odpowiedzi</div>';
@@ -585,19 +584,19 @@ function autoDetectAndFormatCode(content) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 
-    // 1. Wykrywanie bloków kodu PHP (różne warianty)
+    // 1. Wykrywanie bloków kodu PHP 
     safeContent = safeContent.replace(
         /(&lt;\/?(php\?|php|\?)(&gt;)?)([\s\S]*?)(\?&gt;)/gi,
         '<pre><code class="language-php">$1$4$5</code></pre>'
     );
 
-    // 2. Wykrywanie bloków kodu z ``` (Markdown)
+    // 2. Wykrywanie bloków kodu 
     safeContent = safeContent.replace(
         /```(\w+)?\n?([\s\S]*?)```/g,
         '<pre><code class="language-$1">$2</code></pre>'
     );
 
-    // 3. Wykrywanie pojedynczych linii kodu z `
+    // 3. Wykrywanie pojedynczych linii kodu z 
     safeContent = safeContent.replace(
         /`([^`]+)`/g,
         '<code class="inline-code">$1</code>'

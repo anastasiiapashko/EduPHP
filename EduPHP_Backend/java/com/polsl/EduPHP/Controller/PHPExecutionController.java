@@ -34,16 +34,13 @@ public class PHPExecutionController {
                     Map.of("success", false, "error", "Kod PHP nie może być pusty"));
             }
             
-            // DODAJ TE LINIJKI - zwiększ liczbę prób przed testowaniem
             try {
                 userTaskService.incrementAttemptOnly(userId, taskId);
             } catch (Exception e) {
-                // Jeśli nie ma rekordu, utwórz go
                 userTaskService.startTask(userId, taskId);
                 userTaskService.incrementAttemptOnly(userId, taskId);
             }
             
-            // Tylko testowanie bez zapisywania
             PHPExecutionResult result = phpExecutorService.executePHPCode(userId, taskId, phpCode);
             
             Map<String, Object> response = new HashMap<>();

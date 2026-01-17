@@ -17,14 +17,12 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
     
-    // Stare endpointy (dla kompatybilności)
     @GetMapping("/all")
     public ResponseEntity<List<Task>> getAllTasks() {
         List<Task> tasks = taskService.getAllTasks();
         return ResponseEntity.ok(tasks);
     }
     
-    // Nowe endpointy z DTO (PREFEROWANE)
     @GetMapping("/all-dto")
     public ResponseEntity<List<TaskDTO>> getAllTasksDTO() {
         List<TaskDTO> tasks = taskService.getAllTasksDTO();
@@ -51,14 +49,12 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
     
-    // Stary endpoint POST
     @PostMapping("/create")
     public ResponseEntity<Task> createTask(@RequestBody Task task) {
         Task savedTask = taskService.saveTask(task);
         return ResponseEntity.ok(savedTask);
     }
     
-    // Nowy endpoint POST z DTO
     @PostMapping("/create-dto")
     public ResponseEntity<TaskDTO> createTaskDTO(@RequestBody TaskDTO taskDTO) {
         Task savedTask = taskService.saveTaskFromDTO(taskDTO);

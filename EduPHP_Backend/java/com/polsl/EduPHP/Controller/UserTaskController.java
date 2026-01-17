@@ -19,7 +19,6 @@ public class UserTaskController {
     @Autowired
     private UserTaskService userTaskService;
 
-    // Rozpocznij zadanie
     @PostMapping("/{userId}/start/{taskId}")
     public ResponseEntity<?> startTask(
             @PathVariable Integer userId,
@@ -30,7 +29,6 @@ public class UserTaskController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (DataIntegrityViolationException e) {
-            // Spróbuj ponownie znaleźć istniejący rekord
             try {
                 UserTaskDTO existingDTO = userTaskService.getUserTaskStatusDTO(userId, taskId);
                 return ResponseEntity.ok(existingDTO);
@@ -41,7 +39,6 @@ public class UserTaskController {
         }
     }
 
-    // Zapisz rozwiązanie
     @PutMapping("/{userId}/task/{taskId}/save-only")
     public ResponseEntity<?> saveSolutionOnly(
             @PathVariable Integer userId,
@@ -61,7 +58,6 @@ public class UserTaskController {
         }
     }
 
-    // Oznacz jako ukończone
     @PutMapping("/{userId}/task/{taskId}/complete")
     public ResponseEntity<?> completeTask(
             @PathVariable Integer userId,
@@ -83,7 +79,6 @@ public class UserTaskController {
         }
     }
 
-    // Pobierz status zadania - GŁÓWNY ENDPOINT który powodował problem
     @GetMapping("/{userId}/task/{taskId}")
     public ResponseEntity<?> getUserTaskStatus(
             @PathVariable Integer userId,
@@ -93,7 +88,6 @@ public class UserTaskController {
             UserTaskDTO userTaskDTO = userTaskService.getUserTaskStatusDTO(userId, taskId);
             return ResponseEntity.ok(userTaskDTO);
         } catch (IllegalArgumentException e) {
-            // Jeśli nie znaleziono, zwróć domyślny DTO z statusem NOT_STARTED
             UserTaskDTO defaultDTO = new UserTaskDTO();
             defaultDTO.setUserId(userId);
             defaultDTO.setTaskId(taskId);
@@ -104,7 +98,6 @@ public class UserTaskController {
         }
     }
 
-    // Pobierz wszystkie zadania użytkownika w kursie
     @GetMapping("/{userId}/course/{kursId}")
     public ResponseEntity<List<UserTaskDTO>> getUserTasksInCourse(
             @PathVariable Integer userId,
@@ -114,7 +107,6 @@ public class UserTaskController {
         return ResponseEntity.ok(userTasks);
     }
 
-    // Pobierz postęp w kursie
     @GetMapping("/{userId}/course/{kursId}/progress")
     public ResponseEntity<Map<String, Object>> getUserCourseProgress(
             @PathVariable Integer userId,
@@ -124,14 +116,12 @@ public class UserTaskController {
         return ResponseEntity.ok(progress);
     }
 
-    // Pobierz wszystkie zadania użytkownika
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<UserTaskDTO>> getAllUserTasks(@PathVariable Integer userId) {
         List<UserTaskDTO> userTasks = userTaskService.getAllUserTasksDTO(userId);
         return ResponseEntity.ok(userTasks);
     }
 
-    // Resetuj zadanie
     @PutMapping("/{userId}/task/{taskId}/reset")
     public ResponseEntity<?> resetTask(
             @PathVariable Integer userId,
@@ -145,7 +135,6 @@ public class UserTaskController {
         }
     }
 
-    // Statystyki użytkownika
     @GetMapping("/user/{userId}/statistics")
     public ResponseEntity<Map<String, Object>> getUserStatistics(@PathVariable Integer userId) {
         Map<String, Object> stats = userTaskService.getUserStatistics(userId);
@@ -161,9 +150,7 @@ public class UserTaskController {
         try {
             List<UserTaskDTO> userTasks = userTaskService.getAllUserTasksDTO(userId);
             
-            // Filtrowanie według okresu (możesz dodać logikę filtrowania)
             if (period != null && date != null) {
-                // Tutaj dodaj logikę filtrowania według okresu
                 userTasks = userTaskService.filterTasksByPeriod(userTasks, period, date);
             }
             
@@ -179,7 +166,6 @@ public class UserTaskController {
         return ResponseEntity.ok().build();
     }
     
-    // Użyj pomocy - oznacza zadanie jako ukończone z 0 punktów
     @PutMapping("/{userId}/task/{taskId}/use-help")
     public ResponseEntity<?> useHelpAndComplete(
             @PathVariable Integer userId,

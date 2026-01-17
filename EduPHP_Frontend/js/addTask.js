@@ -108,7 +108,7 @@ class TaskCreatorManager {
         }
     }
 
-    // Zapis zadania (dodawanie lub edycja)
+    // Zapis zadania
     async saveTask() {
         const form = document.getElementById('addTaskForm');
         if (!form) return;
@@ -266,7 +266,6 @@ class TaskCreatorManager {
             `;
         }).join('');
 
-        // Dodaj event listeners do przycisków
         this.setupTaskManagementEventListeners();
     }
 
@@ -296,7 +295,7 @@ class TaskCreatorManager {
         });
     }
 
-    // Edycja zadania - wypełnienie formularza
+    // Edycja zadania
     async editTask(taskId) {
         const task = this.tasks.find(t => t.idTask === taskId);
         if (task) {
@@ -306,27 +305,22 @@ class TaskCreatorManager {
 
     // Wypełnienie formularza danymi zadania
     fillTaskForm(task) {
-        // Wypełnij pola formularza
         document.getElementById('taskTitle').value = task.tytul || '';
         document.getElementById('taskDescription').value = task.description || '';
         document.getElementById('taskInputs').value = task.inputs || '';
         document.getElementById('taskOutputs').value = task.outputs || '';
         document.getElementById('taskDifficulty').value = task.difficulty || 'łatwy';
         
-        // Ustaw odpowiedni kurs w select
         const courseSelect = document.getElementById('taskCourseSelect');
         if (courseSelect) {
             courseSelect.value = task.kursId || '';
         }
 
-        // WYPEŁNIJ POLE ROZWIĄZANIA 
          fillTaskFormWithSolution(task);
 
-        // Przełącz na tryb edycji
         this.currentEditTaskId = task.idTask;
         this.updateTaskFormUI();
 
-        // Przewiń do formularza
         document.getElementById('addTaskForm').scrollIntoView({ 
             behavior: 'smooth', 
             block: 'start' 
@@ -348,7 +342,6 @@ class TaskCreatorManager {
             if (response.ok) {
                 this.showSuccess('Zadanie zostało usunięte');
                 
-                // Jeśli usuwamy zadanie które właśnie edytujemy, zresetuj formularz
                 if (this.currentEditTaskId === taskId) {
                     this.resetTaskForm();
                 }
@@ -364,7 +357,6 @@ class TaskCreatorManager {
         }
     }
 
-    // Metody pomocnicze
     showSuccess(message) {
         this.showNotification(message, 'success');
     }

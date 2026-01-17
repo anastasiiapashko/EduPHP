@@ -1,9 +1,0 @@
-/EduPHP_Frontend
-├── index.html       → strona główna (dla gościa)
-├── login.html       → logowanie
-├── register.html    → rejestracja
-├── materials.html   → materiały
-├── css/
-│   └── style.css
-└── js/
-    └── script.js

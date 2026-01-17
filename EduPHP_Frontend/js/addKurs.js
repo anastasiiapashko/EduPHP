@@ -1,5 +1,3 @@
-// addKurs.js - obsługa formularza dodawania i edycji kursów przez administratora
-
 import { showGlobalError, showFormError, showFieldError } from './utils.js';
 
 let currentEditId = null;

@@ -1,8 +1,6 @@
-// addSolution.js - obsługa dodawania/edycji rozwiązań pomocy dla zadań
 import { showGlobalError, showFieldError } from './utils.js';
 
 export function setupSolutionManagement() {
-    // Rozszerz formularz zadania o pole rozwiązania
     extendTaskFormWithSolution();
     setupSolutionEventListeners();
 }
@@ -62,10 +60,6 @@ function setupSolutionCharCounter() {
 }
 
 function setupSolutionEventListeners() {
-    // Obsługa zapisu rozwiązania przy zapisie zadania
-    // (rozwiązanie jest częścią danych zadania, więc zapisuje się automatycznie)
-    
-    // Dodatkowa walidacja jeśli potrzebna
     const taskForm = document.getElementById('addTaskForm');
     if (taskForm) {
         const originalSubmit = taskForm.onsubmit;
@@ -82,7 +76,7 @@ function setupSolutionEventListeners() {
 function validateSolutionForm() {
     const solutionTextarea = document.getElementById('taskSolution');
     
-    // Usuń istniejące błędy
+
     const existingErrors = document.querySelectorAll('.validation-error');
     existingErrors.forEach(error => error.remove());
 
@@ -94,7 +88,7 @@ function validateSolutionForm() {
     return true;
 }
 
-// Funkcja do wypełniania formularza danymi zadania (rozszerzenie istniejącej funkcji)
+// Funkcja do wypełniania formularza danymi zadania 
 export function fillTaskFormWithSolution(task) {
     const solutionField = document.getElementById('taskSolution');
     if (solutionField && task.solution !== undefined) {

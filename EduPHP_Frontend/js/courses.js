@@ -1,5 +1,3 @@
-// courses.js - obsługa wyświetlania kursów i śledzenia postępów
-
 import { showGlobalError, getUserDataFromStorage } from './utils.js';
 
 let allCourses = [];
@@ -7,12 +5,10 @@ let userCourses = [];
 
 export function setupCourses() {
     try {
-        // Sprawdź czy jesteśmy na stronie kursów
         if (!window.location.pathname.includes('kurs.html')) {
             return;
         }
 
-        // Inicjalizacja
         loadUserCourses();
         setupEventListeners();
 
@@ -225,7 +221,6 @@ window.toggleCourseCompletion = async function(courseId, isCompleted) {
                 }
             }
             
-            // Aktualizuj podsumowanie
             updateProgressSummary();
             
             showGlobalError(`Kurs ${isCompleted ? 'oznaczony jako ukończony' : 'wznowiony'}!`, 'success');
@@ -236,7 +231,6 @@ window.toggleCourseCompletion = async function(courseId, isCompleted) {
         console.error('Błąd podczas zmiany statusu kursu:', error);
         showGlobalError('Błąd podczas zapisywania statusu kursu');
         
-        // Przywróć poprzedni stan checkboxa
         const checkbox = document.querySelector(`input[onchange="toggleCourseCompletion(${courseId}, this.checked)"]`);
         if (checkbox) {
             checkbox.checked = !checkbox.checked;

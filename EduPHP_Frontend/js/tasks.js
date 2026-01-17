@@ -1,4 +1,3 @@
-import { checkAuth, logout } from './auth.js';
 
 export function setupTasksPage() {
     if (!document.querySelector('.tasks-container')) {
@@ -92,7 +91,7 @@ class TasksViewer {
 
     applyFilters() {
         this.filteredTasks = this.tasks.filter(task => {
-            // Filtrowanie po wyszukiwaniu (rozszerzone o nazwę kursu)
+            // Filtrowanie po wyszukiwaniu 
             if (this.currentFilters.search) {
                 const searchTerm = this.currentFilters.search.toLowerCase();
                 const taskTitle = task.tytul || '';
@@ -102,7 +101,7 @@ class TasksViewer {
                 const matchesSearch = 
                     taskTitle.toLowerCase().includes(searchTerm) ||
                     taskDescription.toLowerCase().includes(searchTerm) ||
-                    courseName.includes(searchTerm); // DODANO: wyszukiwanie po nazwie kursu
+                    courseName.includes(searchTerm); 
                 
                 if (!matchesSearch) return false;
             }
@@ -279,7 +278,7 @@ class TasksViewer {
             });
         }
 
-        // DODANO: Obsługa filtra kursu
+        //  Obsługa filtra kursu
         if (courseFilter) {
             courseFilter.addEventListener('change', (e) => {
                 this.currentFilters.course = e.target.value;

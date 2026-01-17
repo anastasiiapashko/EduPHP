@@ -28,7 +28,6 @@ public class UserController {
 	public ResponseEntity<?> saveData(@Valid @RequestBody UserRegisterDTO rejestracja, 
 	                                  BindingResult bindingResult) {
 	    
-	    // ✅ WALIDACJA DTO
 	    if (bindingResult.hasErrors()) {
 	        Map<String, String> errors = new HashMap<>();
 	        bindingResult.getFieldErrors().forEach(error -> 

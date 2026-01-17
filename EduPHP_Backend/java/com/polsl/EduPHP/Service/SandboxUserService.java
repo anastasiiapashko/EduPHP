@@ -11,7 +11,7 @@ import com.polsl.EduPHP.model.User;
 
 import jakarta.transaction.Transactional;
 
-//SandboxUserService.java
+
 @Service
 @Transactional
 public class SandboxUserService {
@@ -23,16 +23,16 @@ public class SandboxUserService {
  private static final int MAX_SANDBOX_ID = 99999;
  
  public Integer getOrCreateSandboxUserId(Integer mainUserId) {
-     // Sprawdzenie czy już ma sandbox_id
+     
      Optional<Integer> existingSandboxId = userRepository.findSandboxUserIdByUserId(mainUserId);
      if (existingSandboxId.isPresent() && existingSandboxId.get() != null) {
          return existingSandboxId.get();
      }
      
-     // Generowanie nowego randomowego ID
+     
      Integer newSandboxId = generateUniqueSandboxId();
      
-     // Zapisanie do bazy
+     
      User user = userRepository.findById(mainUserId)
          .orElseThrow(() -> new RuntimeException("User not found: " + mainUserId));
      user.setSandboxUserId(newSandboxId);
@@ -49,8 +49,8 @@ public class SandboxUserService {
      while (attempts < maxAttempts) {
          Integer randomId = ThreadLocalRandom.current().nextInt(MIN_SANDBOX_ID, MAX_SANDBOX_ID + 1);
          
-         // Sprawdzenie czy ID jest unikalne
-         Optional<User> existingUser = userRepository.findBySandboxUserId(randomId);
+        
+         Optional<User> existingUser = userRepository.findBySandboxUserId(randomId);  // Sprawdzenie czy ID jest unikalne
          if (existingUser.isEmpty()) {
              return randomId;
          }

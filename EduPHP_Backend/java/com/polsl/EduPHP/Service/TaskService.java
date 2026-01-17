@@ -28,7 +28,7 @@ public class TaskService {
         return (List<Task>) taskRepository.findAll();
     }
     
-    // Nowa metoda do zwracania DTO
+    
     public List<TaskDTO> getAllTasksDTO() {
         List<Task> tasks = (List<Task>) taskRepository.findAll();
         return tasks.stream()
@@ -53,7 +53,7 @@ public class TaskService {
         return taskRepository.save(task);
     }
     
-    // Nowa metoda do zapisywania z DTO
+    
     public Task saveTaskFromDTO(TaskDTO taskDTO) {
         Task task = convertToEntity(taskDTO);
         return taskRepository.save(task);
@@ -68,7 +68,7 @@ public class TaskService {
         throw new IllegalArgumentException("Kurs o ID " + kursId + " nie istnieje");
     }
     
-    // Nowa metoda do tworzenia z DTO
+    
     public Task createTaskForKursFromDTO(Integer kursId, TaskDTO taskDTO) {
         Optional<Kurs> kursOpt = kursRepository.findById(kursId);
         if (kursOpt.isPresent()) {
@@ -98,7 +98,7 @@ public class TaskService {
         throw new IllegalArgumentException("Task o ID " + id + " nie istnieje");
     }
     
-    // Nowa metoda do aktualizacji z DTO
+    
     public Task updateTaskFromDTO(Integer id, TaskDTO taskDTO) {
         Optional<Task> taskOpt = taskRepository.findById(id);
         if (taskOpt.isPresent()) {
@@ -125,7 +125,7 @@ public class TaskService {
             throw new IllegalArgumentException("Task o ID " + id + " nie istnieje");
         }
         
-        // 1. Najpierw usuń UserTask (rozwiązania)
+        // 1. Najpierw usuń UserTask 
         List<UserTask> userTasks = userTaskRepository.findByTask_IdTask(id);
         if (!userTasks.isEmpty()) {
             userTaskRepository.deleteAll(userTasks);
@@ -174,7 +174,6 @@ public class TaskService {
         task.setOutputs(dto.getOutputs());
         task.setDifficulty(dto.getDifficulty());
         task.setSolution(dto.getSolution());
-        // Kurs ustawiany osobno
         return task;
     }
 }

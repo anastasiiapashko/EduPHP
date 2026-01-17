@@ -1,4 +1,3 @@
-// statistics.js - moduł statystyk użytkownika
 import { showGlobalError, getUserId } from './utils.js';
 
 class StatisticsManager {
@@ -28,7 +27,6 @@ class StatisticsManager {
 
     async loadUserData() {
         try {
-            // Użyj nowego endpointu z filtrowaniem
             const dateStr = this.currentDate.toISOString().split('T')[0]; // YYYY-MM-DD
             const response = await fetch(
                 `http://localhost:8082/api/user-task/user/${this.userId}/statistics/detailed?period=${this.currentPeriod}&date=${dateStr}`, 
@@ -41,7 +39,6 @@ class StatisticsManager {
                 this.userTasks = await response.json();
                 console.log('Załadowane zadania użytkownika:', this.userTasks);
             } else {
-                // Fallback do starego endpointu jeśli nowy nie działa
                 const fallbackResponse = await fetch(
                     `http://localhost:8082/api/user-task/user/${this.userId}`, 
                     {
@@ -171,10 +168,8 @@ class StatisticsManager {
             detailedStats: []
         };
 
-        // Używamy już przefiltrowanych danych z backendu
         const filteredTasks = this.userTasks;
         
-        // Grupowanie danych według okresu
         const groupedData = this.groupTasksByPeriod(filteredTasks);
         
         switch (this.currentPeriod) {
@@ -227,10 +222,8 @@ class StatisticsManager {
     }
 
     processWeeklyData(groupedData, periodData) {
-        // Dla tygodnia: 0=niedziela, 1=poniedziałek, ..., 6=sobota
-        // Ale chcemy: 1=poniedziałek, ..., 7=niedziela
         for (let i = 1; i <= 7; i++) {
-            const dayIndex = i === 7 ? 0 : i; // Konwersja do formatu Date (0=niedziela)
+            const dayIndex = i === 7 ? 0 : i; 
             const tasks = groupedData[dayIndex] || [];
             
             periodData.completedTasks.push(tasks.filter(task => task.status === 'COMPLETED').length);
@@ -461,9 +454,9 @@ class StatisticsManager {
                 datasets: [{
                     data: difficultyData,
                     backgroundColor: [
-                        'rgba(75, 192, 192, 0.8)',  // łatwy - zielony
-                        'rgba(255, 205, 86, 0.8)',  // średni - żółty
-                        'rgba(255, 99, 132, 0.8)'   // trudny - czerwony
+                        'rgba(75, 192, 192, 0.8)',  
+                        'rgba(255, 205, 86, 0.8)',  
+                        'rgba(255, 99, 132, 0.8)'   
                     ],
                     borderWidth: 1
                 }]
@@ -486,7 +479,7 @@ class StatisticsManager {
     renderDetailedStats(periodData) {
         const tbody = document.getElementById('detailedStatsBody');
         
-        // Sortuj statystyki według daty (najnowsze na górze)
+        // Sortuj statystyki według daty 
         const sortedStats = periodData.detailedStats.sort((a, b) => 
             new Date(b.date) - new Date(a.date)
         );
@@ -515,7 +508,6 @@ class StatisticsManager {
             </tr>
         `).join('');
         
-        // Jeśli brak danych
         if (sortedStats.length === 0) {
             tbody.innerHTML = `
                 <tr>

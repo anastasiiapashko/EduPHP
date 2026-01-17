@@ -47,12 +47,12 @@ public class UserComplainService {
         return applicationRepository.save(application);
     }
 
-    // Dodatkowa metoda do sprawdzenia istnienia
+    
     public boolean applicationExists(Integer id) {
         return applicationRepository.existsById(id);
     }
 
-    // Metoda do zliczania wszystkich zgłoszeń
+    
     public long countAllApplications() {
         return applicationRepository.count();
     }
@@ -66,7 +66,7 @@ public class UserComplainService {
 
         if (app.getUser() != null) {
             dto.setUserId(app.getUser().getIdUser());
-            dto.setUserLogin(app.getUser().getLogin()); // ← tylko login, bez reszty
+            dto.setUserLogin(app.getUser().getLogin()); // tylko login, bez reszty
         }
         return dto;
     }

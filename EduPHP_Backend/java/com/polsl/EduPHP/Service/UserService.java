@@ -48,7 +48,7 @@ public class UserService {
 	@Autowired
     private PasswordEncoder passwordEncoder;
     
-    // ✅ WZORCE WALIDACYJNE
+    
     private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-ZąęłńóśźżĄĘŁŃÓŚŹŻ\\s.'-]{2,50}$");
     private static final Pattern LOGIN_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{3,30}$");
     private static final Pattern ROLE_PATTERN = Pattern.compile("^(user|admin)$");
@@ -56,13 +56,13 @@ public class UserService {
     private static final int MAX_NAME_LENGTH = 50;
     private static final int MAX_LOGIN_LENGTH = 30;
     
-    // ✅ ROZSZERZONA WALIDACJA PRZED WSZYSTKIMI ATAKAMI
+    
     private void validateUserInput(UserRegisterDTO rejestracja) {
         if (rejestracja == null) {
             throw new IllegalArgumentException("Dane rejestracji są wymagane");
         }
         
-        // Walidacja null/empty
+        
         validateRequiredFields(rejestracja);
         
         // Oczyszczanie danych
@@ -72,16 +72,16 @@ public class UserService {
         String passwd = rejestracja.getPasswd() != null ? rejestracja.getPasswd().trim() : "";
         String rola = rejestracja.getRola() != null ? rejestracja.getRola().trim() : "user";
         
-        // 1. ✅ WALIDACJA DŁUGOŚCI (Buffer Overflow protection)
+        // 1. WALIDACJA DŁUGOŚCI (Buffer Overflow protection)
         validateLengths(firstName, secondName, login, passwd);
         
-        // 2. ✅ WALIDACJA FORMATU (SQL Injection, XSS, Command Injection)
+        // 2. WALIDACJA FORMATU (SQL Injection, XSS, Command Injection)
         validateFormats(firstName, secondName, login, rola);
         
-        // 3. ✅ WALIDACJA BEZPIECZEŃSTWA (Wzorce ataków)
+        // 3. WALIDACJA BEZPIECZEŃSTWA (Wzorce ataków)
         validateSecurityPatterns(firstName, secondName, login);
         
-        // 4. ✅ WALIDACJA SPECJALNYCH ZNAKÓW (Null bytes, Path traversal)
+        // 4. WALIDACJA SPECJALNYCH ZNAKÓW (Null bytes, Path traversal)
         validateSpecialCharacters(firstName, secondName, login);
        
         
@@ -189,7 +189,7 @@ public class UserService {
     
   
     
-    // ✅ METODY POMOCNICZE
+   
     private String sanitizeInput(String input) {
         if (input == null) return "";
         // Usuwanie nadmiarowych białych znaków
@@ -222,16 +222,16 @@ public class UserService {
     }
 	
 	public User zapiszRejestracje(UserRegisterDTO rejestracja) {
-		// ✅ WALIDACJA BEZPIECZEŃSTWA - PIERWSZA LINIA!
+		// WALIDACJA BEZPIECZEŃSTWA - PIERWSZA LINIA!
 		validateUserInput(rejestracja);
 		
-	    // ✅ WALIDACJA BIZNESOWA
+	    // WALIDACJA BIZNESOWA
 	    Optional<User> existingUser = userRepository.findByLogin(rejestracja.getLogin());
 	    if (existingUser.isPresent()) {
 	        throw new IllegalArgumentException("Login '" + rejestracja.getLogin() + "' jest już zajęty");
 	    }
 
-	    // ✅ MAPOWANIE DTO → ENCJA Z HASHOWANIEM HASŁA
+	    // MAPOWANIE DTO → ENCJA Z HASHOWANIEM HASŁA
 	    User user = new User();
 	    user.setFirstName(rejestracja.getFirstName());
 	    user.setSecondName(rejestracja.getSecondName());
@@ -242,16 +242,16 @@ public class UserService {
 	    
 	    user.setRola(rejestracja.getRola());
 
-	    // ✅ ZAPISZ USERA
+	  
 	    User savedUser = userRepository.save(user);
 
-	    // ✅ AUTOMATYCZNIE UTWÓRZ PROFIL
+	    
 	    createProfileForUser(savedUser);
 
 	    return savedUser;
 	}
 
-	// METODA DO TWORZENIA PROFILU
+	
     private void createProfileForUser(User user) {
         Profil profil = new Profil();
         profil.setUser(user);
@@ -262,12 +262,12 @@ public class UserService {
         profilRepository.save(profil);
     }
     
-	// znajdź użytkownika po ID
+	
     public Optional<User> findById(Integer userId) {
         return userRepository.findById(userId);
     }
     
-    // znajdź użytkownika po loginie
+   
     public Optional<User> findByLogin(String login) {
         return userRepository.findByLogin(login);
     }
@@ -276,7 +276,7 @@ public Map<String, Object> sprawdzLogin(UserLogowanieDTO logowanie) {
     Map<String, Object> response = new HashMap<>();
     
     try {
-        // ✅ WALIDACJA WEJŚCIA LOGOWANIA
+        // WALIDACJA WEJŚCIA LOGOWANIA
         if (logowanie.getLogin() == null || logowanie.getLogin().trim().isEmpty()) {
             response.put("valid", false);
             response.put("message", "Login jest wymagany");
@@ -289,26 +289,26 @@ public Map<String, Object> sprawdzLogin(UserLogowanieDTO logowanie) {
             return response;
         }
         
-        // ✅ SANITYZACJA LOGINA
+        // SANITYZACJA LOGINA
         String sanitizedLogin = sanitizeInput(logowanie.getLogin().trim());
         
-        // ✅ SZUKAJ UŻYTKOWNIKA
+        // SZUKAJ UŻYTKOWNIKA
         Optional<User> userOpt = userRepository.findByLogin(sanitizedLogin);
         
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             
-            // ✅ WERYFIKACJA HASŁA Z HASHOWANIEM
+            // WERYFIKACJA HASŁA Z HASHOWANIEM
             if (passwordEncoder.matches(logowanie.getPasswd(), user.getPasswd())) {
                 
-                // ✅ SPRAWDŹ CZY UŻYTKOWNIK JEST AKTYWNY - DODANE
+                // SPRAWDŹ CZY UŻYTKOWNIK JEST AKTYWNY
                 if (Boolean.FALSE.equals(user.getIsActive())) {
                     response.put("valid", false);
                     response.put("message", "❌ Twoje konto jest zablokowane.");
                     return response;
                 }
                 
-                // ✅ AKTUALIZUJ CZAS OSTATNIEGO LOGOWANIA
+                // AKTUALIZUJ CZAS OSTATNIEGO LOGOWANIA
                 updateLastLoginTime(user.getIdUser());
                 
                 response.put("valid", true);
@@ -336,7 +336,7 @@ public Map<String, Object> sprawdzLogin(UserLogowanieDTO logowanie) {
     return response;
 }
 	
-	// ✅ DODAJ METODĘ DO AKTUALIZACJI CZASU LOGOWANIA
+	// METODA DO AKTUALIZACJI CZASU LOGOWANIA
 	private void updateLastLoginTime(Integer userId) {
 	    try {
 	        Profil profil = profilRepository.findByUserIdUser(userId);

@@ -18,7 +18,6 @@ public class UserManagementController {
     @Autowired
     private UserRepository userRepository;
     
-    // Pobierz wszystkich użytkowników
     @GetMapping
     public List<UserManagementDTO> getAllUsers() {
         return StreamSupport.stream(userRepository.findAll().spliterator(), false)
@@ -26,14 +25,12 @@ public class UserManagementController {
             .collect(Collectors.toList());
     }
     
-    // Zablokuj użytkownika
     @PostMapping("/{userId}/block")
     public ResponseEntity<?> blockUser(@PathVariable Integer userId) {
         try {
             User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
             
-            // Nie pozwól zablokować admina
             if ("admin".equals(user.getRola())) {
                 return ResponseEntity.badRequest().body("Cannot block administrator");
             }
@@ -46,7 +43,7 @@ public class UserManagementController {
         }
     }
     
-    // Odblokuj użytkownika
+    
     @PostMapping("/{userId}/unblock")
     public ResponseEntity<?> unblockUser(@PathVariable Integer userId) {
         try {

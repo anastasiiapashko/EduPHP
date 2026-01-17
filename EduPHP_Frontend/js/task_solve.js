@@ -1,4 +1,3 @@
-// js/task_solve.js
 import { showGlobalError } from './utils.js';
 import { getCurrentUserId} from './auth.js';
 import { PHPCompiler } from './php_compiler.js';
@@ -18,7 +17,6 @@ class TaskSolver {
 
     async init() {
         if (!this.taskId || !this.userId) {
-            //showGlobalError('Błąd: Brak ID zadania lub użytkownika', 'error');
             return;
         }
 
@@ -195,10 +193,9 @@ class TaskSolver {
 
         if (response.ok) {
             const result = await response.json();
-            showGlobalError('✅ Zadanie ukończone z pomocą (0 punktów)', 'success');
+            showGlobalError('Zadanie ukończone z pomocą (0 punktów)', 'success');
             this.hideHelpModal();
             
-            // Wstaw rozwiązanie do edytora
             if (this.taskData && this.taskData.solution) {
                 this.phpCompiler.setEditorContent(this.taskData.solution);
             }
@@ -206,7 +203,6 @@ class TaskSolver {
             await this.loadUserTaskData();
             this.updateUI();
         } else {
-            // Pobierz szczegóły błędu z odpowiedzi
             let errorMessage = 'Błąd podczas używania pomocy';
             try {
                 const errorData = await response.json();
@@ -218,18 +214,17 @@ class TaskSolver {
         }
     } catch (error) {
         console.error('Błąd podczas używania pomocy:', error);
-        showGlobalError(`❌ Nie udało się użyć pomocy: ${error.message}`, 'error');
+        showGlobalError(`Nie udało się użyć pomocy: ${error.message}`, 'error');
     }
 }
 
-    // Modyfikacja metody submitSolution do użycia ScoreCalculator
 async submitSolution() {
     const solution = this.phpCompiler.getCurrentCode();
     
     try {
-        console.log('🟡 Rozpoczynanie przesyłania rozwiązania...');
+        console.log('Rozpoczynanie przesyłania rozwiązania...');
         
-        // 1. Najpierw zapisz rozwiązanie (BEZ zwiększania prób)
+        // 1. Najpierw zapisz rozwiązanie 
         const saveResponse = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/save-only`, {
             method: 'PUT',
             headers: {
@@ -239,20 +234,20 @@ async submitSolution() {
             body: JSON.stringify({ solution: solution })
         });
 
-        console.log('💾 Status zapisywania rozwiązania:', saveResponse.status);
+        console.log('Status zapisywania rozwiązania:', saveResponse.status);
         
         if (!saveResponse.ok) {
             const saveError = await saveResponse.text();
-            console.error('❌ Błąd zapisywania:', saveError);
+            console.error('Błąd zapisywania:', saveError);
             throw new Error('Błąd podczas zapisywania rozwiązania: ' + saveError);
         }
 
-        // 2. Oblicz wynik na podstawie czasu i prób (NIE zwiększamy prób!)
+        // 2. Oblicz wynik na podstawie czasu i prób 
         const timeSpent = this.calculateTimeSpent();
         const attempts = this.userTaskData ? this.userTaskData.attempts : 0; // Używamy aktualnej liczby prób
         const score = this.scoreCalculator.calculateScore(timeSpent, attempts);
 
-        console.log('📊 Obliczone dane:', {
+        console.log(' Obliczone dane:', {
             timeSpentMinutes: timeSpent,
             attempts: attempts,
             score: score,
@@ -262,10 +257,10 @@ async submitSolution() {
         // 3. Przygotuj dane do wysłania
         const completeData = { 
             timeSpentMinutes: timeSpent,
-            attempts: attempts // Używamy aktualnej liczby prób, NIE zwiększamy
+            attempts: attempts // Używamy aktualnej liczby prób
         };
 
-        console.log('📨 Wysyłane dane:', completeData);
+        console.log('Wysyłane dane:', completeData);
 
         // 4. Oznacz jako ukończone z obliczonym wynikiem
         const completeResponse = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}/complete`, {
@@ -277,14 +272,14 @@ async submitSolution() {
             body: JSON.stringify(completeData)
         });
 
-        console.log('📨 Status odpowiedzi complete:', completeResponse.status);
+        console.log('Status odpowiedzi complete:', completeResponse.status);
 
         if (completeResponse.ok) {
             const result = await completeResponse.json();
-            console.log('✅ Odpowiedź complete:', result);
+            console.log(' Odpowiedź complete:', result);
             
             const analysis = this.scoreCalculator.getScoreAnalysis(timeSpent, attempts);
-            showGlobalError(`✅ Zadanie ukończone! Wynik: ${score}/10 (czas: ${timeSpent}min, próby: ${attempts})`, 'success');
+            showGlobalError(`Zadanie ukończone! Wynik: ${score}/10 (czas: ${timeSpent}min, próby: ${attempts})`, 'success');
             
             await this.loadUserTaskData();
             this.updateUI();
@@ -295,21 +290,21 @@ async submitSolution() {
             
             try {
                 const errorData = await completeResponse.json();
-                console.error('❌ Błąd z serwera:', errorData);
+                console.error('Błąd z serwera:', errorData);
                 errorMessage = errorData.error || errorData.message || errorMessage;
                 errorDetails = JSON.stringify(errorData);
             } catch (e) {
-                console.error('❌ Błąd parsowania odpowiedzi:', e);
+                console.error('Błąd parsowania odpowiedzi:', e);
                 errorMessage = `Błąd ${completeResponse.status}: ${completeResponse.statusText}`;
                 errorDetails = await completeResponse.text();
             }
             
-            console.error('❌ Pełne szczegóły błędu:', errorDetails);
+            console.error('Pełne szczegóły błędu:', errorDetails);
             throw new Error(`${errorMessage} | Szczegóły: ${errorDetails}`);
         }
     } catch (error) {
-        console.error('💥 Błąd podczas przesyłania rozwiązania:', error);
-        showGlobalError(`❌ Nie udało się przesłać rozwiązania: ${error.message}`, 'error');
+        console.error('Błąd podczas przesyłania rozwiązania:', error);
+        showGlobalError(`Nie udało się przesłać rozwiązania: ${error.message}`, 'error');
     }
 }
 
@@ -337,7 +332,7 @@ async submitSolution() {
     document.getElementById('progressStatus').textContent = statusText;
     document.getElementById('progressAttempts').textContent = this.userTaskData.attempts || 0;
     
-    // POPRAWIONE: Wyświetl 0 zamiast "-" gdy wynik wynosi 0
+    // Wyświetl 0  gdy wynik wynosi 0
     const score = this.userTaskData.score;
     document.getElementById('progressScore').textContent = score !== null && score !== undefined ? score : '-';
 
@@ -347,7 +342,6 @@ async submitSolution() {
         ? new Date(lastAttempt).toLocaleString('pl-PL') 
         : '-';
 
-    // Pokazuj/ukryj historię dla ukończonych zadań
     const historySection = document.getElementById('historySection');
     if (historySection) {
         historySection.style.display = this.userTaskData.status === 'COMPLETED' ? 'block' : 'none';
@@ -377,12 +371,12 @@ async submitSolution() {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-check"></i> Ukończone';
                 submitBtn.title = 'To zadanie zostało już ukończone';
-                submitBtn.classList.add('completed'); // Możesz dodać klasę CSS dla stylowania
+                submitBtn.classList.add('completed'); 
             } else {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-flag-checkered"></i> Skończyłem';
                 submitBtn.title = 'Prześlij rozwiązanie do oceny';
-                submitBtn.classList.remove('completed'); // Usuń klasę jeśli była
+                submitBtn.classList.remove('completed'); 
             }
         }
     }
@@ -401,14 +395,12 @@ async submitSolution() {
                 credentials: 'include'
             });
 
-            console.log('🔄 Status resetowania:', response.status);
+            console.log(' Status resetowania:', response.status);
             
             if (response.ok) {
-                // ODCZYTUJ ODPOWIEDŹ z backendu - to kluczowe!
                 const resetData = await response.json();
-                console.log('📊 Dane po resecie z backendu:', resetData);
+                console.log(' Dane po resecie z backendu:', resetData);
                 
-                // BEZPOŚREDNIO zaktualizuj dane z odpowiedzi backendu
                 this.userTaskData = {
                     status: resetData.status || 'NOT_STARTED',
                     attempts: resetData.attempts || 0,
@@ -420,15 +412,13 @@ async submitSolution() {
                     taskId: resetData.taskId
                 };
                 
-                showGlobalError('🔄 Postęp zadania zresetowany pomyślnie!', 'success');
+                showGlobalError(' Postęp zadania zresetowany pomyślnie!', 'success');
                 
-                // Wyczyść edytor
                 this.phpCompiler.setEditorContent('<?php\n// Napisz swoje rozwiązanie tutaj\n?>');
                 
-                // Odśwież UI - TERAZ z poprawnymi danymi
                 this.updateUI();
                 
-                console.log('✅ Zadanie zresetowane, status:', this.userTaskData.status);
+                console.log(' Zadanie zresetowane, status:', this.userTaskData.status);
                 
             } else {
                 const errorData = await response.json();
@@ -436,8 +426,8 @@ async submitSolution() {
             }
             
         } catch (error) {
-            console.error('💥 Błąd resetowania zadania:', error);
-            showGlobalError(`❌ Nie udało się zresetować zadania: ${error.message}`, 'error');
+            console.error(' Błąd resetowania zadania:', error);
+            showGlobalError(` Nie udało się zresetować zadania: ${error.message}`, 'error');
         }
     }
 

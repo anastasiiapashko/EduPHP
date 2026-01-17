@@ -1,6 +1,3 @@
-// permissions.js - moduł do zarządzania uprawnieniami użytkownika
-
-
 // Funkcja sprawdzająca czy użytkownik jest administratorem
 export function isAdmin() {
     try{

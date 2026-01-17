@@ -1,4 +1,3 @@
-// js/calculation_score.js - system oceniania zadań
 export class ScoreCalculator {
     constructor() {
         this.maxAttempts = 10;
@@ -27,9 +26,7 @@ export class ScoreCalculator {
         return Math.round(score * 10 * 100) / 100;
     }
 
-    /**
-     * Normalizuje czas (im krótszy czas, tym lepszy wynik)
-     */
+    // Normalizuje czas (im krótszy czas, tym lepszy wynik)
     normalizeTime(timeSpentMinutes) {
         if (timeSpentMinutes <= 0) return 1.0;
         if (timeSpentMinutes >= this.maxTimeMinutes) return 0.0;
@@ -39,9 +36,8 @@ export class ScoreCalculator {
         return Math.max(0, Math.min(1, normalized));
     }
 
-    /**
-     * Normalizuje liczbę prób (im mniej prób, tym lepszy wynik)
-     */
+    //Normalizuje liczbę prób (im mniej prób, tym lepszy wynik)
+     
     normalizeAttempts(attempts) {
         if (attempts <= 1) return 1.0;
         if (attempts >= this.maxAttempts) return 0.0;
@@ -51,9 +47,7 @@ export class ScoreCalculator {
         return Math.max(0, Math.min(1, normalized));
     }
 
-    /**
-     * Oblicza czas spędzony między startem a ukończeniem
-     */
+       // Oblicza czas spędzony między startem a ukończeniem
     calculateTimeSpent(startDate, completionDate) {
         if (!startDate || !completionDate) return 0;
         
@@ -64,9 +58,9 @@ export class ScoreCalculator {
         return Math.max(0, Math.round(diffMs / (1000 * 60))); // minuty
     }
 
-    /**
-     * Zwraca szczegółową analizę wyniku
-     */
+    
+     // Zwraca szczegółową analizę wyniku
+     
     getScoreAnalysis(timeSpentMinutes, attempts) {
         const score = this.calculateScore(timeSpentMinutes, attempts);
         const timeScore = this.normalizeTime(timeSpentMinutes) * this.timeWeight * 10;

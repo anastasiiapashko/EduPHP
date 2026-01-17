@@ -41,7 +41,7 @@ public class KursService {
     }
     
     public Kurs saveKurs(Kurs kurs) {
-        // ✅ USUŃ ręczne zarządzanie ID - Hibernate sam się tym zajmie
+        
         return kursRepository.save(kurs);
     }
     
@@ -51,8 +51,8 @@ public class KursService {
             throw new IllegalArgumentException("Kurs o ID " + id + " nie istnieje");
         }
         
-        // 1. Najpierw usuń UserTask (rozwiązania zadań) - NAJNIŻSZE
-        List<Task> tasks = taskRepository.findByKurs_IdKursu(id);
+        
+        List<Task> tasks = taskRepository.findByKurs_IdKursu(id);  // 1. Najpierw usuń UserTask 
         for (Task task : tasks) {
             List<UserTask> userTasks = userTaskRepository.findByTask_IdTask(task.getIdTask());
             if (!userTasks.isEmpty()) {
@@ -60,19 +60,19 @@ public class KursService {
             }
         }
         
-        // 2. Potem usuń Task (zadania)
-        if (!tasks.isEmpty()) {
+        
+        if (!tasks.isEmpty()) { // 2. Potem usuń Task
             taskRepository.deleteAll(tasks);
         }
         
-        // 3. Potem usuń UserKurs (zapisy na kursy)
-        List<UserKurs> userKursy = userKursRepository.findByKurs_IdKursu(id);
-        if (!userKursy.isEmpty()) {
+        
+        List<UserKurs> userKursy = userKursRepository.findByKurs_IdKursu(id); // 3. Potem usuń UserKurs 
+        if (!userKursy.isEmpty()) { 
             userKursRepository.deleteAll(userKursy);
         }
         
-        // 4. Na końcu usuń kurs
-        kursRepository.deleteById(id);
+        
+        kursRepository.deleteById(id); // 4. Na końcu usuń kurs
     }
     
     public UserKurs addUserToKurs(Integer userId, Integer kursId, Boolean ukonczony) {
@@ -123,8 +123,8 @@ public class KursService {
     public Double getProgressUkonczenia(Integer userId, Integer kursId) {
         try {
             
-            // Pobierz wszystkie zadania dla tego kursu
-            List<Task> tasksInCourse = taskRepository.findByKurs_IdKursu(kursId);
+            
+            List<Task> tasksInCourse = taskRepository.findByKurs_IdKursu(kursId); // Pobierz wszystkie zadania dla tego kursu
             System.out.println("Znaleziono zadań w kursie: " + tasksInCourse.size());
             
             if (tasksInCourse.isEmpty()) {
@@ -132,24 +132,24 @@ public class KursService {
                 return 0.0;
             }
             
-            // Pobierz zadania użytkownika dla tego kursu
-            List<UserTask> userTasks = userTaskRepository.findByUser_IdUserAndTask_Kurs_IdKursu(userId, kursId);
+            
+            List<UserTask> userTasks = userTaskRepository.findByUser_IdUserAndTask_Kurs_IdKursu(userId, kursId); // Pobierz zadania użytkownika dla tego kursu
             System.out.println("Znaleziono userTasks: " + userTasks.size());
             
-            // ✅ DODAJ: Debugowanie statusów
-            userTasks.forEach(ut -> {
+            
+            userTasks.forEach(ut -> { // Debugowanie statusów
                 System.out.println("Zadanie " + ut.getTask().getIdTask() + " - status: '" + ut.getStatus() + "'");
             });
             
-            // Policz ukończone zadania - SPRAWDŹ CZY STATUS JEST "COMPLETED"
-            long completedTasks = userTasks.stream()
+            
+            long completedTasks = userTasks.stream() // Policz ukończone zadania - SPRAWDŹ CZY STATUS JEST "COMPLETED"
                 .filter(ut -> "COMPLETED".equalsIgnoreCase(ut.getStatus()))
                 .count();
             
             System.out.println("Ukończone zadania: " + completedTasks + "/" + tasksInCourse.size());
             
-            // Oblicz procent
-            double progress = (double) completedTasks / tasksInCourse.size() * 100;
+            
+            double progress = (double) completedTasks / tasksInCourse.size() * 100; // Oblicz procent
             System.out.println("Obliczony progres: " + progress + "%");
             
             return progress;
@@ -165,8 +165,8 @@ public class KursService {
     public Double getOverallProgress(Integer userId) {
         try {
             
-            // Pobierz wszystkie kursy użytkownika
-            List<Kurs> userCourses = getKursyByUserId(userId);
+            
+            List<Kurs> userCourses = getKursyByUserId(userId); // Pobierz wszystkie kursy użytkownika
             System.out.println("Znaleziono kursów użytkownika: " + userCourses.size());
             
             if (userCourses.isEmpty()) {
@@ -177,15 +177,15 @@ public class KursService {
             double totalProgress = 0.0;
             int coursesWithTasks = 0;
             
-            // Dla każdego kursu oblicz progres
-            for (Kurs kurs : userCourses) {
+            
+            for (Kurs kurs : userCourses) { // Dla każdego kursu oblicz progres
                 Double courseProgress = getProgressUkonczenia(userId, kurs.getIdKursu());
                 totalProgress += courseProgress;
                 coursesWithTasks++;
             }
             
-            // Oblicz średni progres
-            double overallProgress = coursesWithTasks > 0 ? totalProgress / coursesWithTasks : 0.0;
+            
+            double overallProgress = coursesWithTasks > 0 ? totalProgress / coursesWithTasks : 0.0; // Oblicz średni progres
             System.out.println("Ogólny progres: " + overallProgress + "%");
             
             return overallProgress;
@@ -201,12 +201,12 @@ public class KursService {
     public Long getCompletedCoursesCount(Integer userId) {
         try {
             
-            // Pobierz wszystkie zapisy użytkownika na kursy
-            List<UserKurs> userKursy = userKursRepository.findByUser_IdUser(userId);
+            
+            List<UserKurs> userKursy = userKursRepository.findByUser_IdUser(userId); // Pobierz wszystkie zapisy użytkownika na kursy
             System.out.println("Znaleziono zapisów na kursy: " + userKursy.size());
             
-            // Policz ukończone kursy (gdzie ukonczony = true)
-            long completedCount = userKursy.stream()
+            
+            long completedCount = userKursy.stream() // Policz ukończone kursy (gdzie ukonczony = true)
                 .filter(UserKurs::getUkonczony)
                 .count();
             

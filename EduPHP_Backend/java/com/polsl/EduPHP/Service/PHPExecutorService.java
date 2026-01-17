@@ -41,8 +41,8 @@ public class PHPExecutorService {
             System.out.println("Can execute: " + phpFile.canExecute());
             System.out.println("Absolute path: " + phpFile.getAbsolutePath());
             
-            // Test wykonania
-            ProcessBuilder pb = new ProcessBuilder(phpExecutablePath, "--version");
+            
+            ProcessBuilder pb = new ProcessBuilder(phpExecutablePath, "--version"); // Test wykonania
             Process process = pb.start();
             String versionOutput = readProcessOutput(process);
             System.out.println("PHP Version: " + versionOutput);
@@ -60,16 +60,16 @@ public class PHPExecutorService {
     @Value("${php.temp.directory:temp}")
     private String tempDirectory;
     
-    // Zapisz rozwiązanie użytkownika na stałe - NADPISUJE istniejący plik
-    public String saveUserSolution(Integer userId, Integer taskId, String phpCode) throws IOException {
+    
+    public String saveUserSolution(Integer userId, Integer taskId, String phpCode) throws IOException { // Zapisz rozwiązanie użytkownika na stałe 
         Path userDir = prepareUserDirectory(userId);
         String filename = generateSolutionFilename(taskId); // Tylko task_X.php
         Path solutionFile = userDir.resolve(filename);
         
         String securedCode = addPHPSecurityWrappers(phpCode, userId);
         
-        // Nadpisz plik jeśli istnieje, utwórz jeśli nie istnieje
-        Files.writeString(solutionFile, securedCode, 
+        
+        Files.writeString(solutionFile, securedCode, // Nadpisz plik jeśli istnieje, utwórz jeśli nie istnieje
             StandardOpenOption.CREATE, 
             StandardOpenOption.TRUNCATE_EXISTING, 
             StandardOpenOption.WRITE);
@@ -78,22 +78,22 @@ public class PHPExecutorService {
         return solutionFile.toString();
     }
     
-    // Pobierz ostatnie rozwiązanie użytkownika - teraz szuka tylko task_X.php
-    public String getLastUserSolution(Integer userId, Integer taskId) throws IOException {
+    
+    public String getLastUserSolution(Integer userId, Integer taskId) throws IOException { // Pobierz ostatnie rozwiązanie użytkownika - teraz szuka tylko task_X.php
         Path userDir = Paths.get(solutionsDirectory, "user_" + userId);
         if (!Files.exists(userDir)) {
             return "<?php\n// Napisz swoje rozwiązanie tutaj\n?>";
         }
         
-        // Szukaj pliku task_X.php (bez timestampu)
-        Path solutionFile = userDir.resolve("task_" + taskId + ".php");
+        
+        Path solutionFile = userDir.resolve("task_" + taskId + ".php"); // Szukaj pliku task_X.php (bez timestampu)
         if (Files.exists(solutionFile)) {
            String content = Files.readString(solutionFile);
             return extractUserCode(content);
         }
         
-        // Fallback: szukaj starych plików z timestampem (dla kompatybilności)
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(userDir, 
+        
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(userDir, // szukaj starych plików z timestampem 
              "task_" + taskId + "_*.php")) {
             
             Path latestFile = null;
@@ -105,16 +105,16 @@ public class PHPExecutorService {
             }
             
             if (latestFile != null) {
-                // Przenieś stary plik do nowej nazwy (bez timestampu)
-                String content = Files.readString(latestFile);
+                
+                String content = Files.readString(latestFile);// Przenieś stary plik do nowej nazwy (bez timestampu)
                 String userCode = extractUserCode(content);
                 Path newFile = userDir.resolve("task_" + taskId + ".php");
                 Files.writeString(newFile, addPHPSecurityWrappers(userCode, userId), 
                     StandardOpenOption.CREATE, 
                     StandardOpenOption.TRUNCATE_EXISTING);
                 
-                // Usuń stary plik
-                Files.deleteIfExists(latestFile);
+                
+                Files.deleteIfExists(latestFile); // Usuń stary plik
                 
                 return userCode;
             }
@@ -123,13 +123,13 @@ public class PHPExecutorService {
         return "<?php\n// Napisz swoje rozwiązanie tutaj\n?>";
     }
     
-   // NOWA METODA - wyciąga tylko kod użytkownika z wrapperów
-    private String extractUserCode(String wrappedCode) {
+   
+    private String extractUserCode(String wrappedCode) {// wyciąga tylko kod użytkownika z wrapperów
         if (wrappedCode == null || wrappedCode.trim().isEmpty()) {
             return "<?php\n// Napisz swoje rozwiązanie tutaj\n?>";
         }
         
-        // Szukamy bloku try { ... } catch
+        
         String tryBlockStart = "try {";
         String tryBlockEnd = "} catch (Throwable $e) {";
         
@@ -137,20 +137,20 @@ public class PHPExecutorService {
         int tryEnd = wrappedCode.indexOf(tryBlockEnd);
         
         if (tryStart != -1 && tryEnd != -1) {
-            // Wyciągamy kod z bloku try
+            
             int userCodeStart = tryStart + tryBlockStart.length();
             String userCode = wrappedCode.substring(userCodeStart, tryEnd).trim();
             
-            // Jeśli użytkownik miał własne tagi PHP, zachowujemy je
-            if (userCode.startsWith("<?php")) {
+            
+            if (userCode.startsWith("<?php")) { // Jeśli użytkownik miał własne tagi PHP, zachowujemy je
                 return userCode;
             } else {
-                // Dodajemy tagi PHP jeśli ich nie ma
-                return "<?php\n" + userCode + "\n?>";
+                
+                return "<?php\n" + userCode + "\n?>"; // Dodajemy tagi PHP jeśli ich nie ma
             }
         }
         
-        // Fallback: jeśli nie znaleziono wrapperów, zwróć oryginalny kod
+        
         return wrappedCode;
     }
     
@@ -166,7 +166,7 @@ public class PHPExecutorService {
         return userDir;
     }
     
-    // Pliki tymczasowe nadal mają timestamp (to jest OK)
+    
     private Path createTempPHPFile(Path tempDir, Integer userId, Integer taskId, String phpCode) 
             throws IOException {
         String filename = String.format("temp_%d_%d_%s.php", 
@@ -180,7 +180,7 @@ public class PHPExecutorService {
         return phpFile;
     }
     
-    // Tylko task_X.php - bez timestampu
+    
     private String generateSolutionFilename(Integer taskId) {
         return String.format("task_%d.php", taskId);
     }
@@ -478,14 +478,14 @@ public class PHPExecutorService {
         processBuilder.redirectErrorStream(false);
         processBuilder.directory(phpFile.getParent().toFile());
         
-        // Zmienne środowiskowe dla bezpieczeństwa
-        Map<String, String> env = processBuilder.environment();
+        
+        Map<String, String> env = processBuilder.environment(); // Zmienne środowiskowe dla bezpieczeństwa
         env.put("PHP_DISABLE_FUNCTIONS", "system,exec,passthru,shell_exec,popen,proc_open");
         
         Process process = processBuilder.start();
         
-        // Timeout zabezpieczenie
-        new Thread(() -> {
+        
+        new Thread(() -> { // Timeout zabezpieczenie
             try {
                 if (!process.waitFor(5, TimeUnit.SECONDS)) {
                     process.destroyForcibly();
@@ -521,8 +521,8 @@ public class PHPExecutorService {
         }
     }
    
-    // Główna metoda wykonująca kod PHP (bez zmian)
-    public PHPExecutionResult executePHPCode(Integer userId, Integer taskId, String phpCode) {
+     
+    public PHPExecutionResult executePHPCode(Integer userId, Integer taskId, String phpCode) { // Główna metoda wykonująca kod PHP
         Path tempFile = null;
         try {
             // 1. Przygotuj katalog tymczasowy

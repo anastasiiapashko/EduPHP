@@ -1,6 +1,4 @@
-// js/php_compiler.js
 import { showGlobalError } from './utils.js';
-import { getCurrentUserId } from './auth.js';
 
 class PHPCompiler {
     constructor(taskId, userId) {
@@ -51,16 +49,15 @@ class PHPCompiler {
     
     async loadLastSolution() {
     try {
-        // UŻYJ ENDPOINTU KTÓRY JUŻ MASZ - pobierz dane user-task
         const response = await fetch(`http://localhost:8082/api/user-task/${this.userId}/task/${this.taskId}`);
         if (response.ok) {
             const userTaskData = await response.json();
             if (userTaskData.userSolution) {
                 this.currentCode = userTaskData.userSolution;
                 this.setEditorContent(userTaskData.userSolution);
-                console.log('✅ Załadowano zapisane rozwiązanie użytkownika');
+                console.log('Załadowano zapisane rozwiązanie użytkownika');
             } else {
-                console.log('ℹ️ Brak zapisanego rozwiązania, używam pustego edytora');
+                console.log('Brak zapisanego rozwiązania, używam pustego edytora');
             }
         }
     } catch (error) {
@@ -113,7 +110,7 @@ class PHPCompiler {
     async testCode() {
         const code = this.getCurrentCode();
         if (!code.trim()) {
-            showGlobalError('❌ Wpisz kod PHP do przetestowania', 'error');
+            showGlobalError('Wpisz kod PHP do przetestowania', 'error');
             return;
         }
         
@@ -131,25 +128,23 @@ class PHPCompiler {
             await this.refreshUserTaskData();
 
             if (result.success) {
-                showGlobalError('✅ Test zakończony pomyślnie', 'success');
+                showGlobalError('Test zakończony pomyślnie', 'success');
             } else {
-                showGlobalError('⚠️ Test zakończony z błędami', 'warning');
+                showGlobalError('Test zakończony z błędami', 'warning');
             }
             
         } catch (error) {
             console.error('Błąd testowania kodu:', error);
-            showGlobalError('❌ Błąd podczas testowania kodu', 'error');
+            showGlobalError(' Błąd podczas testowania kodu', 'error');
         }
     }
     
-    // DODAJ NOWĄ METODĘ do odświeżania danych
     async refreshUserTaskData() {
         try {
-            // Wywołaj metodę z TaskSolver aby odświeżyć UI
             if (window.taskSolver && typeof window.taskSolver.loadUserTaskData === 'function') {
                 await window.taskSolver.loadUserTaskData();
                 await window.taskSolver.updateUI();
-                console.log('🔄 Dane użytkownika odświeżone');
+                console.log('Dane użytkownika odświeżone');
             }
         } catch (error) {
             console.error('Błąd odświeżania danych:', error);
@@ -158,12 +153,11 @@ class PHPCompiler {
     async saveCode() {
         const code = this.getCurrentCode();
         if (!code.trim()) {
-            showGlobalError('❌ Wpisz kod PHP do zapisania', 'error');
+            showGlobalError('Wpisz kod PHP do zapisania', 'error');
             return;
         }
         
         try {
-            // Upewnij się, że zadanie jest rozpoczęte
             await this.ensureTaskStarted();
             
             // Tylko zapisz rozwiązanie bez wykonywania
@@ -174,7 +168,7 @@ class PHPCompiler {
             });
             
             if (response.ok) {
-                showGlobalError('✅ Kod zapisany pomyślnie!', 'success');
+                showGlobalError('Kod zapisany pomyślnie!', 'success');
             } else {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Błąd podczas zapisywania kodu');
@@ -182,7 +176,7 @@ class PHPCompiler {
             
         } catch (error) {
             console.error('Błąd zapisywania kodu:', error);
-            showGlobalError(`❌ Błąd podczas zapisywania kodu: ${error.message}`, 'error');
+            showGlobalError(`Błąd podczas zapisywania kodu: ${error.message}`, 'error');
         }
     }
     

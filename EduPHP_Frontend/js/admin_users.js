@@ -1,4 +1,3 @@
-// admin_users.js - zarządzanie użytkownikami przez administratora
 import { showGlobalError, getUserDataFromStorage } from './utils.js';
 import {isAdmin} from './permissions.js' 
 let allUsers = [];
@@ -177,44 +176,6 @@ class UserManagementManager {
         `;
     }
 
-    // Generowanie paginacji
-    generatePagination(totalPages) {
-        const pagination = document.getElementById('pagination');
-        if (!pagination) return;
-        
-        if (totalPages <= 1) {
-            pagination.innerHTML = '';
-            return;
-        }
-
-        let paginationHTML = '';
-        
-        // Przycisk poprzedni
-        if (currentPage > 1) {
-            paginationHTML += `<button class="page-btn" data-page="${currentPage - 1}">
-                <i class="fas fa-chevron-left"></i> Poprzednia
-            </button>`;
-        }
-
-        // Numery stron
-        for (let i = 1; i <= totalPages; i++) {
-            if (i === currentPage) {
-                paginationHTML += `<span class="page-current">${i}</span>`;
-            } else {
-                paginationHTML += `<button class="page-btn" data-page="${i}">${i}</button>`;
-            }
-        }
-
-        // Przycisk następny
-        if (currentPage < totalPages) {
-            paginationHTML += `<button class="page-btn" data-page="${currentPage + 1}">
-                Następna <i class="fas fa-chevron-right"></i>
-            </button>`;
-        }
-
-        pagination.innerHTML = paginationHTML;
-    }
-
     // Aktualizacja statystyk
     updateStatistics() {
         const totalUsers = this.users.length;
@@ -252,17 +213,6 @@ class UserManagementManager {
             });
         }
 
-        // Paginacja
-        const pagination = document.getElementById('pagination');
-        if (pagination) {
-            pagination.addEventListener('click', (e) => {
-                if (e.target.classList.contains('page-btn')) {
-                    currentPage = parseInt(e.target.dataset.page);
-                    this.displayUsers();
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-            });
-        }
 
         // Akcje użytkowników
         const usersList = document.getElementById('usersList');
@@ -335,7 +285,7 @@ class UserManagementManager {
         }
     }
 
-    // Metody pomocnicze
+  
     showSuccess(message) {
         this.showNotification(message, 'success');
     }
@@ -372,12 +322,3 @@ class UserManagementManager {
     }
 }
 
-// Funkcje globalne dla paginacji
-window.changePage = function(page) {
-    currentPage = page;
-    const manager = document.querySelector('.admin-users-container')?._userManager;
-    if (manager) {
-        manager.displayUsers();
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};

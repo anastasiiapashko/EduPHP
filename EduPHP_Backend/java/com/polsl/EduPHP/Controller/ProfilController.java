@@ -24,17 +24,14 @@ public class ProfilController {
     @Autowired
     private UserService userService;
     
-    // Tworzenie profilu dla użytkownika
     @PostMapping("/create/{userId}")
     public ResponseEntity<String> createProfil(@PathVariable Integer userId) {
         try {
-            // Sprawdź czy użytkownik istnieje
         	Optional<User> userOpt = userService.findById(userId);
             if (userOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
             
-            // Sprawdź czy profil już istnieje
             Profil existingProfil = profilService.getProfilByUserId(userId);
             if (existingProfil != null) {
                 return ResponseEntity.badRequest().body("Profil już istnieje");
@@ -50,19 +47,16 @@ public class ProfilController {
         }
     }
     
-    //1. Upload zdjęcia
     @PostMapping("/upload-avatar/{userId}")
     public ResponseEntity<String> uploadAvatar(
             @PathVariable Integer userId,
             @RequestParam("file") MultipartFile file) {
         
         try {
-            // Sprawdź czy to obrazek
             if (!file.getContentType().startsWith("image/")) {
                 return ResponseEntity.badRequest().body("Tylko zdjęcia są dozwolone!");
             }
             
-            // Zapisz do bazy
             profilService.saveAvatar(userId, file);
             
             return ResponseEntity.ok("Zdjęcie zapisane! 👍");
@@ -72,7 +66,6 @@ public class ProfilController {
         }
     }
     
-    // 2. POBERZ ZDJĘCIE
     @GetMapping("/avatar/{userId}")
     public ResponseEntity<byte[]> getAvatar(@PathVariable Integer userId) {
         byte[] avatar = profilService.getAvatar(userId);
@@ -89,14 +82,12 @@ public class ProfilController {
         return ResponseEntity.notFound().build();
     }
     
-    // 3. USUŃ ZDJĘCIE
     @DeleteMapping("/remove-avatar/{userId}")
     public ResponseEntity<String> removeAvatar(@PathVariable Integer userId) {
         profilService.removeAvatar(userId);
         return ResponseEntity.ok("Zdjęcie usunięte 🗑️");
     }
-    
-    // 4. POKAŻ PROFIL 
+     
     @GetMapping("/{userId}")
     public ResponseEntity<ProfilDTO> getProfil(@PathVariable Integer userId) {
         Profil profil = profilService.getProfilByUserId(userId);
@@ -107,7 +98,6 @@ public class ProfilController {
         return ResponseEntity.notFound().build();
     }
     
-    //5. aktualizacja danych osoby
     @PutMapping("/update-personal/{userId}")
     public ResponseEntity<String> updatePersonalData(
             @PathVariable Integer userId,
@@ -121,7 +111,6 @@ public class ProfilController {
         }
     }
     
-    //6. aktualizacja opisu
     @PutMapping("/update-description/{userId}")
     public ResponseEntity<String> updateDescription(
             @PathVariable Integer userId,
@@ -135,7 +124,6 @@ public class ProfilController {
         }
     }
     
-    //7. aktualizacja hasła
     @PutMapping("/update-password/{userId}")
     public ResponseEntity<String> updatePassword(
             @PathVariable Integer userId,
@@ -167,7 +155,6 @@ public class ProfilController {
         }
     }
     
-    // Metoda DLA OBSŁUGI PREFLIGHT REQUESTS
     @RequestMapping(method = RequestMethod.OPTIONS, value = "/**")
     public ResponseEntity<?> handleOptions() {
         return ResponseEntity.ok().build();

@@ -29,7 +29,7 @@ public class UserTaskService {
     @Autowired
     private TaskRepository taskRepository;
 
-    // Metoda pomocnicza do mapowania UserTask -> UserTaskDTO
+    
     private UserTaskDTO mapToDTO(UserTask userTask) {
         if (userTask == null) return null;
         
@@ -44,7 +44,7 @@ public class UserTaskService {
         dto.setAttempts(userTask.getAttempts());
         dto.setScore(userTask.getScore());
         
-        // Dodatkowe pola z Task
+        
         Task task = userTask.getTask();
         if (task != null) {
             dto.setTaskTitle(task.getTytul());
@@ -56,7 +56,7 @@ public class UserTaskService {
         return dto;
     }
 
-    // Rozpocznij zadanie - DTO version
+    
     public UserTaskDTO startTask(Integer userId, Integer taskId) {
         Optional<User> userOpt = userRepository.findById(userId);
         Optional<Task> taskOpt = taskRepository.findById(taskId);
@@ -65,7 +65,7 @@ public class UserTaskService {
             throw new IllegalArgumentException("Użytkownik lub zadanie nie istnieje");
         }
         
-        // SPRÓBUJ najpierw znaleźć istniejący rekord
+        // znaleźć istniejący rekord
         Optional<UserTask> existing = userTaskRepository.findByUser_IdUserAndTask_IdTask(userId, taskId);
         if (existing.isPresent()) {
             UserTask userTask = existing.get();
@@ -78,7 +78,7 @@ public class UserTaskService {
             return mapToDTO(userTask); // już istnieje, zwróć bez zmian
         }
         
-        // Jeśli nie istnieje, utwórz nowy - ALE z dodatkowym zabezpieczeniem
+        // Jeśli nie istnieje, utwórz nowy 
         try {
             UserTask userTask = new UserTask();
             userTask.setUser(userOpt.get());
@@ -91,7 +91,7 @@ public class UserTaskService {
             UserTask saved = userTaskRepository.save(userTask);
             return mapToDTO(saved);
         } catch (DataIntegrityViolationException e) {
-            // Jeśli w międzyczasie ktoś inny utworzył rekord, znajdź go i zwróć
+            
             Optional<UserTask> retryExisting = userTaskRepository.findByUser_IdUserAndTask_IdTask(userId, taskId);
             if (retryExisting.isPresent()) {
                 return mapToDTO(retryExisting.get());
@@ -100,7 +100,7 @@ public class UserTaskService {
         }
     }
 
-    // Zapisz rozwiązanie użytkownika - DTO version
+    // Zapisz rozwiązanie użytkownika 
     public UserTaskDTO saveSolution(Integer userId, Integer taskId, String solution) {
         Optional<UserTask> userTaskOpt = userTaskRepository.findByUser_IdUserAndTask_IdTask(userId, taskId);
         
@@ -108,7 +108,7 @@ public class UserTaskService {
             UserTask userTask = userTaskOpt.get();
             userTask.setUserSolution(solution);
             
-            // Automatycznie zmień status jeśli był NOT_STARTED
+            
             if ("NOT_STARTED".equals(userTask.getStatus())) {
                 userTask.setStatus("IN_PROGRESS");
             }
@@ -119,15 +119,15 @@ public class UserTaskService {
         throw new IllegalArgumentException("Nie znaleziono zadania dla użytkownika. Najpierw rozpocznij zadanie.");
     }
 
- // Tylko zwiększ liczbę prób BEZ zapisywania rozwiązania - DTO version
+ 
     public UserTaskDTO incrementAttemptOnly(Integer userId, Integer taskId) {
         Optional<UserTask> userTaskOpt = userTaskRepository.findByUser_IdUserAndTask_IdTask(userId, taskId);
         
         if (userTaskOpt.isPresent()) {
             UserTask userTask = userTaskOpt.get();
-            userTask.setAttempts(userTask.getAttempts() + 1); // TUTAJ zwiększamy próby!
+            userTask.setAttempts(userTask.getAttempts() + 1); 
             
-            // Automatycznie zmień status jeśli był NOT_STARTED
+            
             if ("NOT_STARTED".equals(userTask.getStatus())) {
                 userTask.setStatus("IN_PROGRESS");
             }
@@ -147,38 +147,35 @@ public class UserTaskService {
     	final double TIME_WEIGHT = 0.7; 	//70% waga czasu
     	final double ATTEMPTS_WEIGHT =0.3;  //30% waga prób
     	
-    	//Normalizacja czasu(0-1, gdzie 1 = najlepszy czas)
-    	double normalizedTime;
+    	
+    	double normalizedTime; //Normalizacja czasu(0-1, gdzie 1 = najlepszy czas)
     	if(timeSpentMinutes <= 0) {
     		normalizedTime = 1.0;
     	} else if(timeSpentMinutes >= MAX_TIME_MINUTES){
     		normalizedTime = 0.0;
     	} else {
-    		//Funkcja wykładnicza - nagroda za szybkie rozwiązanie
-    		normalizedTime = 1 - Math.pow(timeSpentMinutes / (double)MAX_TIME_MINUTES,0.7);
+    		
+    		normalizedTime = 1 - Math.pow(timeSpentMinutes / (double)MAX_TIME_MINUTES,0.7); //Funkcja wykładnicza - nagroda za szybkie rozwiązanie
     		normalizedTime = Math.max(0, Math.min(1, normalizedTime));
     	}
     	
-    	//Normalizacja prób (0-1, gdzie 1 = najmniej prób)
-    	double normalizedAttempts;
+    	double normalizedAttempts; //Normalizacja prób (0-1, gdzie 1 = najmniej prób)
     	if(attempts <= 1) {
     		normalizedAttempts = 1.0;
     	} else if (attempts >= MAX_ATTEMPTS) {
     		normalizedAttempts = 0.0;
     	} else {
-    		//Funkcja liniowa z lekkim wygładzeniem
-    		normalizedAttempts = 1 - (attempts - 1) / (double)(MAX_ATTEMPTS - 1);
+    		
+    		normalizedAttempts = 1 - (attempts - 1) / (double)(MAX_ATTEMPTS - 1); //Funkcja liniowa z lekkim wygładzeniem
     		normalizedAttempts = Math.max(0, Math.min(1, normalizedAttempts));
     	}
     	
-    	//Obliczenie wyniku z wagami
-    	double score = (normalizedTime * TIME_WEIGHT) + (normalizedAttempts * ATTEMPTS_WEIGHT);
+    	double score = (normalizedTime * TIME_WEIGHT) + (normalizedAttempts * ATTEMPTS_WEIGHT); //Obliczenie wyniku z wagami
     	
-    	//Skalowanie od 0-10 i zaokrąglanie
-    	return (int) Math.round(score * 10);
+    	return (int) Math.round(score * 10);//Skalowanie od 0-10 i zaokrąglanie
     }
     
-    // Oznacz zadanie jako ukończone - DTO version
+    // Oznacz zadanie jako ukończone 
     public UserTaskDTO completeTask(Integer userId, Integer taskId, Integer timeSpentMinutes, Integer attempts) {
         Optional<UserTask> userTaskOpt = userTaskRepository.findByUser_IdUserAndTask_IdTask(userId, taskId);
         
@@ -197,7 +194,7 @@ public class UserTaskService {
         throw new IllegalArgumentException("Nie znaleziono zadania dla użytkownika");
     }
 
-    // Pobierz stan zadania - DTO version (GŁÓWNA METODA która naprawia problem)
+    
     public UserTaskDTO getUserTaskStatusDTO(Integer userId, Integer taskId) {
         Optional<UserTask> userTaskOpt = userTaskRepository.findByUser_IdUserAndTask_IdTask(userId, taskId);
         if (userTaskOpt.isPresent()) {
@@ -206,12 +203,12 @@ public class UserTaskService {
         throw new IllegalArgumentException("Nie znaleziono zadania dla użytkownika");
     }
 
-    // Zachowaj oryginalną metodę dla kompatybilności
+    
     public Optional<UserTask> getUserTaskStatus(Integer userId, Integer taskId) {
         return userTaskRepository.findByUser_IdUserAndTask_IdTask(userId, taskId);
     }
 
-    // Pobierz wszystkie zadania użytkownika w kursie - DTO version
+    
     public List<UserTaskDTO> getUserTasksInCourseDTO(Integer userId, Integer kursId) {
         List<UserTask> userTasks = userTaskRepository.findByUser_IdUserAndTask_Kurs_IdKursu(userId, kursId);
         return userTasks.stream()
@@ -219,7 +216,7 @@ public class UserTaskService {
                 .collect(Collectors.toList());
     }
 
-    // Pobierz wszystkie zadania użytkownika - DTO version
+    
     public List<UserTaskDTO> getAllUserTasksDTO(Integer userId) {
         List<UserTask> userTasks = userTaskRepository.findByUser_IdUser(userId);
         return userTasks.stream()
@@ -227,7 +224,7 @@ public class UserTaskService {
                 .collect(Collectors.toList());
     }
 
-    // Resetuj zadanie użytkownika - DTO version
+    
     public UserTaskDTO resetTask(Integer userId, Integer taskId) {
         Optional<UserTask> userTaskOpt = userTaskRepository.findByUser_IdUserAndTask_IdTask(userId, taskId);
         
@@ -246,7 +243,7 @@ public class UserTaskService {
         throw new IllegalArgumentException("Nie znaleziono zadania dla użytkownika");
     }
 
-    // Pozostałe metody bez zmian (zwracają Map, więc nie ma problemu z serializacją)
+    
     public Map<String, Object> getUserCourseProgress(Integer userId, Integer kursId) {
         List<UserTask> userTasks = getUserTasksInCourse(userId, kursId);
         List<Task> allTasksInCourse = taskRepository.findByKurs_IdKursu(kursId);
@@ -292,17 +289,17 @@ public class UserTaskService {
         return stats;
     }
     
-    // Użyj pomocy - ukończ zadanie z 0 punktów
+    
     public UserTaskDTO useHelpAndComplete(Integer userId, Integer taskId) {
         Optional<UserTask> userTaskOpt = userTaskRepository.findByUser_IdUserAndTask_IdTask(userId, taskId);
         
         UserTask userTask;
         
         if (userTaskOpt.isPresent()) {
-            // Rekord istnieje - użyj go
+            
             userTask = userTaskOpt.get();
         } else {
-            // Rekord nie istnieje - utwórz nowy
+            
             Optional<User> userOpt = userRepository.findById(userId);
             Optional<Task> taskOpt = taskRepository.findById(taskId);
             
@@ -317,16 +314,15 @@ public class UserTaskService {
             userTask.setAttempts(0);
         }
         
-        // Ustaw parametry ukończenia z pomocą
         userTask.setStatus("COMPLETED");
         userTask.setCompletionDate(LocalDateTime.now());
-        userTask.setScore(0); // ZAWSZE 0 punktów za użycie pomocy
+        userTask.setScore(0); //  0 punktów za użycie pomocy
         
         UserTask saved = userTaskRepository.save(userTask);
         return mapToDTO(saved);
     }
     
- // W UserTaskService.java dodaj tę metodę:
+
 
     public List<UserTaskDTO> filterTasksByPeriod(List<UserTaskDTO> tasks, String period, String date) {
         if (tasks == null || tasks.isEmpty()) {
@@ -337,7 +333,6 @@ public class UserTaskService {
         try {
             filterDate = LocalDateTime.parse(date + "T00:00:00");
         } catch (Exception e) {
-            // Jeśli data jest nieprawidłowa, zwróć wszystkie zadania
             return tasks;
         }
         
